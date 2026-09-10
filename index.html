@@ -614,17 +614,19 @@
   .reply-text { font-size: 13px; color: var(--text); margin-top: 3px; word-break: break-word; }
 
   /* ===== 我的小游戏 ===== */
+  /* 游戏卡片网格：两列 */
   .game-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);    /* 两列等宽 */
     gap: 20px;
   }
   .game-card {
     padding: 26px;
     text-align: center;
-    transition: transform .2s;
+    transition: transform .2s;                /* 悬停上浮动画 */
   }
-  .game-card:hover { transform: translateY(-4px); }
+  .game-card:hover { transform: translateY(-4px); } /* 悬停上浮 4px */
+  /* 游戏图标（emoji）：圆角方块 */
   .game-icon {
     width: 64px; height: 64px;
     margin: 0 auto 14px;
@@ -637,8 +639,9 @@
     font-size: 28px;
     color: var(--accent);
   }
-  .game-card .g-name { font-size: 18px; font-weight: 800; }
-  .game-card .g-desc { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .game-card .g-name { font-size: 18px; font-weight: 800; }       /* 游戏名 */
+  .game-card .g-desc { font-size: 13px; color: var(--muted); margin-top: 6px; } /* 游戏描述 */
+  /* 游戏状态标签 */
   .game-status {
     display: inline-block;
     margin-top: 14px;
@@ -649,14 +652,15 @@
     color: var(--muted);
     background: rgba(255,255,255,0.7);
   }
-  .game-status.soon { color: #b8860b; border-color: rgba(184,134,11,0.35); background: rgba(255,244,214,0.55); }
-  .game-status.plan { color: var(--accent); border-color: var(--border); }
-  .game-status.done { color: #1a7a50; border-color: rgba(34,160,107,0.35); background: rgba(34,160,107,0.10); }
+  .game-status.soon { color: #b8860b; border-color: rgba(184,134,11,0.35); background: rgba(255,244,214,0.55); } /* 制作中：金色 */
+  .game-status.plan { color: var(--accent); border-color: var(--border); }                                  /* 规划中：蓝色 */
+  .game-status.done { color: #1a7a50; border-color: rgba(34,160,107,0.35); background: rgba(34,160,107,0.10); } /* 已上线：绿色 */
+  /* 占位提示框（虚线边框） */
   .game-placeholder {
     margin-top: 22px;
     padding: 20px;
     text-align: center;
-    border: 2px dashed var(--border);
+    border: 2px dashed var(--border);         /* 虚线边框 */
     border-radius: var(--radius);
     color: var(--muted);
     font-size: 14px;
@@ -664,9 +668,10 @@
   }
 
   /* ===== 有趣的网站 ===== */
+  /* 网站图标网格：自适应列数，每列最小 140px */
   .app-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* 自动填充，列宽不小于 140px */
     gap: 30px 20px;
     padding: 6px 0 10px;
   }
@@ -674,9 +679,10 @@
     text-align: center;
     cursor: pointer;
     transition: transform .15s;
-    text-decoration: none;
+    text-decoration: none;                    /* 去掉下划线（因为是 <a>） */
   }
-  .app-card:hover { transform: translateY(-4px); }
+  .app-card:hover { transform: translateY(-4px); } /* 悬停上浮 */
+  /* 网站图标：圆形 */
   .app-icon {
     width: 104px; height: 104px;
     margin: 0 auto 10px;
@@ -695,25 +701,28 @@
     object-fit: cover;
     display: block;
   }
-  .app-name { font-size: 18px; color: #000000; font-weight: 600; }
+  .app-name { font-size: 18px; color: #000000; font-weight: 600; } /* 网站名称 */
+  /* "添加"占位卡片 */
   .app-add {
     text-align: center;
     cursor: pointer;
-    opacity: 0.6;
+    opacity: 0.6;                            /* 半透明，区别于真实网站 */
   }
   .app-add .app-icon {
     background: rgba(0, 0, 0, 0.6);
-    border: 3px dashed var(--border);
+    border: 3px dashed var(--border);        /* 虚线边框表示可添加 */
     color: var(--accent);
     box-shadow: none;
     font-size: 52px;
   }
+  /* 网站页底部的使用说明卡片 */
   .sites-tip {
     margin-top: 30px;
     padding: 24px;
   }
   .sites-tip h3 { font-size: 17px; font-weight: 800; margin-bottom: 10px; }
   .sites-tip p { font-size: 13px; color: var(--muted); line-height: 1.8; }
+  /* 说明里的代码片段样式 */
   .sites-tip code {
     background: rgba(47,111,208,0.10);
     border: 1px solid var(--border);
