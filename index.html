@@ -1086,7 +1086,7 @@
   /* 模态框滑入动画 */
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ===== 管理员更新日志（时间线样式） ===== */
+  /* ===== 管理员更新日志（时间线样式，深色主题） ===== */
   .changelog-tip {
     font-size: 12px; color: rgba(255,255,255,0.5);
     background: rgba(255,255,255,0.06); border-radius: 10px;
@@ -1096,26 +1096,28 @@
     background: rgba(255,255,255,0.14); padding: 1px 6px;
     border-radius: 4px; font-size: 11px;
   }
+  /* 单条日志：左边带竖线 */
   .cl-item {
     position: relative;
     padding: 0 0 20px 24px;
     margin-left: 6px;
     border-left: 2px solid rgba(255,255,255,0.14);   /* 时间线竖线 */
   }
-  .cl-item:last-child { border-left-color: transparent; padding-bottom: 0; }
-  .cl-item::before {        /* 时间线圆点 */
+  .cl-item:last-child { border-left-color: transparent; padding-bottom: 0; } /* 最后一条不画竖线 */
+  .cl-item::before {        /* 时间线圆点（伪元素） */
     content: '';
     position: absolute; left: -7px; top: 4px;
     width: 12px; height: 12px; border-radius: 50%;
-    background: var(--cl-dot, #888);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.35);
+    background: var(--cl-dot, #888);                   /* 颜色由 data 属性决定，默认灰 */
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.35);            /* 圆点外圈深色描边 */
   }
-  .cl-date { font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 5px; }
+  .cl-date { font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 5px; } /* 日期：半透明白 */
   .cl-title {
     font-size: 14px; font-weight: 700; color: #fff;
     margin-bottom: 5px;
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   }
+  /* 日志标签（新功能/优化/修复） */
   .cl-tag {
     font-size: 11px; font-weight: 600;
     padding: 2px 9px; border-radius: 999px;
@@ -1124,8 +1126,8 @@
   .cl-tag-feature { background: #2ea043; }   /* 新功能 = 绿 */
   .cl-tag-improve { background: #1f6feb; }   /* 优化   = 蓝 */
   .cl-tag-fix     { background: #f85149; }   /* 修复   = 红 */
-  .cl-desc { font-size: 13px; color: rgba(255,255,255,0.68); line-height: 1.75; }
-  /* 密码错误：输入框左右抖动 */
+  .cl-desc { font-size: 13px; color: rgba(255,255,255,0.68); line-height: 1.75; } /* 日志描述 */
+  /* 密码错误：输入框左右抖动动画 */
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     20%, 60% { transform: translateX(-8px); }
@@ -1133,7 +1135,7 @@
   }
   .shake { animation: shake 0.4s; }
 
-  /* ===== 背景粒子层 ===== */
+  /* ===== 背景粒子层：全屏固定，不拦截点击 ===== */
   #particles {
     position: fixed;
     top: 0; left: 0;
@@ -1142,29 +1144,32 @@
     z-index: 0;             /* 在背景上、内容下 */
     overflow: hidden;
   }
+  /* 单个粒子：圆形 + 三层光晕 */
   .particle {
     position: absolute;
-    bottom: -10px;
-    background: rgba(15, 8, 1, 0.9);          /* 青蓝色粒子 */
+    bottom: -10px;                          /* 从屏幕底部下方开始升起 */
+    background: rgba(15, 8, 1, 0.9);        /* 粒子本体颜色 */
     border-radius: 50%;
     box-shadow:
-      0 0 6px 2px rgba(3, 3, 3, 0.8),        /* 内层青光 */
-      0 0 14px 4px rgba(5, 27, 31, 0.6),        /* 中层光晕 */
-      0 0 26px 8px rgba(39, 198, 238, 0.1);       /* 外层扩散光 */
-    animation: particleFloat linear infinite;
+      0 0 6px 2px rgba(3, 3, 3, 0.8),       /* 内层青光 */
+      0 0 14px 4px rgba(5, 27, 31, 0.6),     /* 中层光晕 */
+      0 0 26px 8px rgba(39, 198, 238, 0.1);  /* 外层扩散光 */
+    animation: particleFloat linear infinite; /* 匀速循环上浮 */
   }
+  /* 粒子上浮动画：从底部飘到顶部，左右轻微偏移，两端透明 */
   @keyframes particleFloat {
     0%   { transform: translateY(0) translateX(0); opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { opacity: 1; }
-    100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
+    10%  { opacity: 1; }                     /* 升起 10% 时完全显现 */
+    90%  { opacity: 1; }                     /* 到 90% 前保持可见 */
+    100% { transform: translateY(-110vh) translateX(40px); opacity: 0; } /* 飘出屏幕顶部后消失 */
   }
-  /* 让 .layout 浮在粒子之上 */
+  /* 让 .layout 浮在粒子之上（z-index 比粒子大） */
   .layout { position: relative; z-index: 1; }
 
+  /* 小屏幕（≤600px）额外调整 */
   @media (max-width: 600px) {
-    .proj-card-actions { opacity: 1; }
-    .proj-modal { max-width: 100%; }
+    .proj-card-actions { opacity: 1; }       /* 手机端项目操作按钮常显（没有 hover） */
+    .proj-modal { max-width: 100%; }          /* 模态框占满宽度 */
   }
 </style>
 </head>
