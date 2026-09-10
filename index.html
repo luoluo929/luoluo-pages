@@ -1797,34 +1797,12 @@ function toast(msg, duration) {
   var list = [];
   var editingId = null;
 
-  // 默认 3 个示例项目
-  var DEFAULT_PROJECTS = [
-    {
-      id: 'p1', title: '个人主页空间站', field: 'HTML · CSS · GitHub Pages',
-      desc: '从一张白纸到会呼吸的页面，秉持「代码即思考」，记录每一次迭代瞬间。浅蓝玻璃之下，热爱自在生长。',
-      stats: [{num:'∞',label:'灵感无限'},{num:'3+',label:'版本迭代'},{num:'100%',label:'热爱满格'}],
-      stack: ['HTML5','CSS3','JavaScript','GitHub Pages']
-    },
-    {
-      id: 'p2', title: 'B 站创作计划', field: '视频 · 剪辑 · 新人 UP',
-      desc: '想把自己的游戏日常剪成有趣视频，从一个新人 UP 主开始，慢慢学习剪辑与表达。',
-      stats: [{num:'1',label:'频道起点'},{num:'0→1',label:'成片进度'},{num:'∞',label:'素材灵感'}],
-      stack: ['剪映','Bilibili','游戏录制']
-    },
-    {
-      id: 'p3', title: '小游戏实验室', field: '游戏 · Python · 探索',
-      desc: '用代码把脑洞变成小游戏，慢慢从玩家变成创作者。',
-      stats: [{num:'∞',label:'创意点子'},{num:'0',label:'已完成'},{num:'成长中',label:'当前状态'}],
-      stack: ['Python','Pygame','创意设计']
-    }
-  ];
-
   function load(){
     try {
       var raw = localStorage.getItem(KEY);
       if (raw) { list = JSON.parse(raw) || []; }
-      else { list = JSON.parse(JSON.stringify(DEFAULT_PROJECTS)); save(); }
-    } catch(e) { list = JSON.parse(JSON.stringify(DEFAULT_PROJECTS)); }
+      else { list = []; save(); }
+    } catch(e) { list = []; }
   }
 
   function save(){
