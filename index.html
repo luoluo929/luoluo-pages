@@ -2340,89 +2340,90 @@ function toast(msg, duration) {
   var GIST_RAW_URL = 'https://gist.githubusercontent.com/' + GIST_CONFIG.owner + '/' + GIST_CONFIG.id + '/raw/' + GIST_CONFIG.filename;
   var GIST_API_URL = 'https://api.github.com/gists/' + GIST_CONFIG.id;
 
-  // —— 从 Gist 拉取（无需 token），返回统一数据包 ——
+  // —— 从 Gist 拉取（无需 token，公开 Gist 可直接读），返回统一数据包 ——
   function fetchFromGist(){
-    return fetch(GIST_RAW_URL + '?t=' + Date.now())
-      .then(function(r){ return r.ok ? r.text() : null; })
+    return fetch(GIST_RAW_URL + '?t=' + Date.now())                         // 加时间戳防缓存
+      .then(function(r){ return r.ok ? r.text() : null; })                  // 响应正常就取文本，否则返回 null
       .then(function(txt){
-        if (!txt) return null;
-        try { return migrate(JSON.parse(txt)); } catch(e) { return null; }
+        if (!txt) return null;                                               // 没内容返回 null
+        try { return migrate(JSON.parse(txt)); } catch(e) { return null; }   // 解析 JSON 并迁移格式，失败返回 null
       });
   }
-  // —— 旧格式迁移：把扁平的 skills-only 数据包成 v2 bundle ——
+  // —— 旧格式迁移：把扁平的 skills-only 数据（旧版只有技能进度）包装成 v2 统一 bundle ——
   function migrate(c){
-    if (!c || typeof c !== 'object') return null;
-    if (c.v === 2) return c;
-    var skills = {};
+    if (!c || typeof c !== 'object') return null;                            // 不是对象直接丢弃
+    if (c.v === 2) return c;                                                 // 已经是 v2 就直接返回
+    var skills = {};                                                          // 收集旧版里的技能进度
     SKILLS.forEach(function(sk){ if (c[sk.id] != null) skills[sk.id] = c[sk.id]; });
+    // 包成 v2 格式：projects 和 music_volume 旧版没有，设为 null
     return { v:2, skills:skills, projects:null, music_volume:null, updated:c.updated||null };
   }
-  // —— 打包本地所有需要同步的数据 ——
+  // —— 打包本地所有需要同步的数据，返回 v2 bundle ——
   var SYNC_KEYS = { skills:'luoluo_skills_v1', projects:'luoluo_projects_v1', music_volume:'luoluo_music_volume' };
   function packBundle(){
-    var b = { v:2, updated:new Date().toISOString() };
+    var b = { v:2, updated:new Date().toISOString() };                       // 版本号 + 更新时间
     var sk = {};
-    SKILLS.forEach(function(s){ sk[s.id] = s.progress; });
+    SKILLS.forEach(function(s){ sk[s.id] = s.progress; });                   // 收集所有技能进度
     b.skills = sk;
-    // projects：空数组写 null（避免误清空其他设备的非空数据；用户主动清空不同步是可接受 trade-off）
+    // projects：空数组写 null（避免误清空其他设备的非空数据；用户主动清空不同步是可接受的取舍）
     try { var p = localStorage.getItem(SYNC_KEYS.projects); b.projects = (p && JSON.parse(p).length) ? JSON.parse(p) : null; } catch(e){ b.projects = null; }
-    var mv = localStorage.getItem(SYNC_KEYS.music_volume);
-    b.music_volume = (mv != null && !isNaN(parseFloat(mv))) ? parseFloat(mv) : null;
+    var mv = localStorage.getItem(SYNC_KEYS.music_volume);                   // 读取音乐音量
+    b.music_volume = (mv != null && !isNaN(parseFloat(mv))) ? parseFloat(mv) : null; // 有效数字才打包
     return b;
   }
-  // —— 应用 bundle 到本地 localStorage，返回变更的字段列表 ——
+  // —— 把云端 bundle 应用到本地 localStorage，返回有变更的字段列表 ——
   function applyBundle(b){
-    if (!b || b.v !== 2) return [];
-    var changed = [];
-    if (b.skills && typeof b.skills === 'object') {
-      if (applyProgressData(b.skills)) changed.push('skills');
+    if (!b || b.v !== 2) return [];                                           // 不是 v2 直接返回空
+    var changed = [];                                                         // 记录哪些字段变了
+    if (b.skills && typeof b.skills === 'object') {                           // 有技能数据
+      if (applyProgressData(b.skills)) changed.push('skills');                // 应用进度，有变化就记录
     }
-    if (Array.isArray(b.projects)) {
+    if (Array.isArray(b.projects)) {                                          // 有项目数据
       try {
-        var oldP = localStorage.getItem(SYNC_KEYS.projects);
-        if (oldP !== JSON.stringify(b.projects)) {
+        var oldP = localStorage.getItem(SYNC_KEYS.projects);                  // 本地旧项目
+        if (oldP !== JSON.stringify(b.projects)) {                            // 跟云端不一样才更新
           localStorage.setItem(SYNC_KEYS.projects, JSON.stringify(b.projects));
           changed.push('projects');
         }
       } catch(e) {}
     }
-    if (b.music_volume != null && !isNaN(b.music_volume)) {
+    if (b.music_volume != null && !isNaN(b.music_volume)) {                   // 有音量数据
       var oldV = localStorage.getItem(SYNC_KEYS.music_volume);
-      if (oldV !== String(b.music_volume)) {
+      if (oldV !== String(b.music_volume)) {                                  // 跟本地不一样才更新
         localStorage.setItem(SYNC_KEYS.music_volume, b.music_volume);
         changed.push('music_volume');
       }
     }
     return changed;
   }
-  // —— 触发各模块 reload ——
+  // —— 根据变更字段，触发对应模块重新加载 UI ——
   function reloadModules(changed){
-    if (!changed || !changed.length) return;
-    if (changed.indexOf('skills') >= 0 && typeof updateSkillCards === 'function') updateSkillCards();
-    if (changed.indexOf('projects') >= 0 && window.reloadProjects) window.reloadProjects();
-    if (changed.indexOf('music_volume') >= 0 && window.reloadMusicVolume) window.reloadMusicVolume();
+    if (!changed || !changed.length) return;                                  // 没变化就不处理
+    if (changed.indexOf('skills') >= 0 && typeof updateSkillCards === 'function') updateSkillCards();       // 技能变了 → 刷新技能卡片
+    if (changed.indexOf('projects') >= 0 && window.reloadProjects) window.reloadProjects();                  // 项目变了 → 重载项目
+    if (changed.indexOf('music_volume') >= 0 && window.reloadMusicVolume) window.reloadMusicVolume();        // 音量变了 → 刷新音量
   }
-  // —— 推送到 Gist（打包所有数据，需 token）——
+  // —— 推送到 Gist（打包所有数据，需 GitHub token）——
   function pushToGist(){
-    var token = localStorage.getItem('gh_token');
-    if (!token) return Promise.reject(new Error('no token'));
-    var body = { files: {} };
-    body.files[GIST_CONFIG.filename] = { content: JSON.stringify(packBundle()) };
-    return fetch(GIST_API_URL, {
-      method: 'PATCH',
+    var token = localStorage.getItem('gh_token');                             // 读取本地存的 GitHub token
+    if (!token) return Promise.reject(new Error('no token'));                 // 没 token 直接拒绝
+    var body = { files: {} };                                                  // GitHub API 要求的 body 格式
+    body.files[GIST_CONFIG.filename] = { content: JSON.stringify(packBundle()) }; // 文件名 → 内容
+    return fetch(GIST_API_URL, {                                               // 调用 GitHub Gist API
+      method: 'PATCH',                                                         // PATCH = 更新 Gist
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' },
       body: JSON.stringify(body)
-    }).then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); });
+    }).then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); }); // 成功返回 JSON，失败 reject 状态码
   }
-  // —— 防抖推送：本地有改动后 1.5 秒内合并推送，避免连续操作刷屏 ——
-  var localDirty = false;
-  var pushTimer = null;
+  // —— 防抖推送：本地有改动后 1.5 秒内合并成一次推送，避免连续操作刷屏 ——
+  var localDirty = false;                                                      // 本地是否有未推送的改动
+  var pushTimer = null;                                                        // 防抖定时器
   function debouncedPush(){
-    localDirty = true;
-    clearTimeout(pushTimer);
-    pushTimer = setTimeout(function(){
+    localDirty = true;                                                         // 标记本地有改动（轮询时会跳过拉取，避免覆盖）
+    clearTimeout(pushTimer);                                                   // 清掉上次的定时器
+    pushTimer = setTimeout(function(){                                         // 1.5 秒后真正推送
       pushToGist().then(function(){
-        localDirty = false;
+        localDirty = false;                                                    // 推送成功，清脏标记
         showSyncStatus('✅ 已同步到云端', 2000);
       }).catch(function(err){
         localDirty = false;   // 失败也清 dirty，避免轮询永久跳过；下次编辑会重新置脏
@@ -2434,7 +2435,7 @@ function toast(msg, duration) {
       });
     }, 1500);
   }
-  window.debouncedPush = debouncedPush;
+  window.debouncedPush = debouncedPush;   // 暴露给其他模块（项目、音量）调用
 
   /* ============================================================
      网站数据配置区
