@@ -6,3 +6,10 @@ Thumbs.db
 watch-push.ps1
 compress-images.ps1
 auto-push.*
+
+# Node modules
+node_modules/
+
+
+package.json
+package-lock.json
