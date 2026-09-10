@@ -1267,6 +1267,7 @@
     <div class="proj-modal-head">
       <h3>📋 网页更新日志</h3>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button class="proj-modal-close" id="adminTokenBtn" title="设置 GitHub Token 以启用云端同步" style="width:auto;padding:0 12px;font-size:13px;">☁️ 云端同步</button>
         <button class="proj-modal-close" id="adminLockBtn" title="锁定日志：下次打开需重新输入密码" style="width:auto;padding:0 12px;font-size:13px;">🔒 锁定</button>
         <button class="proj-modal-close" id="adminLogClose">×</button>
       </div>
@@ -1776,15 +1777,13 @@ function toast(msg, duration) {
       toast('✅ Token 已保存，云端同步已启用');
     }
   }
-  // 快捷键 Ctrl+T 打开 Token 设置
+  // 快捷键 Ctrl+Shift+S 打开 Token 设置（Ctrl+T 被浏览器占用）
   document.addEventListener('keydown', function(e){
-    if (e.ctrlKey && (e.key === 't' || e.key === 'T')) {
+    if (e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 's')) {
       e.preventDefault();
       openTokenSetup();
     }
   });
-  // 在技能页右键也能打开（给个菜单入口）
-  window.openTokenSetup = openTokenSetup;
 
   /* ----- 事件绑定 ----- */
   document.getElementById('adminPassOk').addEventListener('click', checkPassword);
@@ -1793,6 +1792,7 @@ function toast(msg, duration) {
   document.getElementById('adminPassClose').addEventListener('click', function(){ hideMask(passMask); });
   document.getElementById('adminLogClose').addEventListener('click', function(){ hideMask(logMask); });
   document.getElementById('adminLockBtn').addEventListener('click', lock);
+  document.getElementById('adminTokenBtn').addEventListener('click', openTokenSetup);
   // 点遮罩空白处（弹窗外面）关闭
   passMask.addEventListener('click', function(e){ if (e.target === passMask) hideMask(passMask); });
   logMask.addEventListener('click', function(e){ if (e.target === logMask) hideMask(logMask); });
