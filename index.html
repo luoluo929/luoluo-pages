@@ -1870,204 +1870,219 @@ function toast(msg, duration) {
 
 // ===== 我的项目（可自定义：增删改查 + localStorage 持久化 + 自动时间戳）=====
 (function(){
-  var KEY = 'luoluo_projects_v1';
-  var SCHEMA_VER_KEY = 'luoluo_projects_schema_v';
-  var SCHEMA_VER = 2;   // 升级到 v2：清除 v1 时代的默认示例项目残留
-  var list = [];
-  var editingId = null;
+  var KEY = 'luoluo_projects_v1';                                        // 项目数据存 localStorage 的键名
+  var SCHEMA_VER_KEY = 'luoluo_projects_schema_v';                        // 数据结构版本号键名
+  var SCHEMA_VER = 2;                                                     // 当前版本：v2 会清除旧版残留的默认示例项目
+  var list = [];                                                          // 项目数组（运行时内存）
+  var editingId = null;                                                   // 当前正在编辑的项目 id；null 表示新增
 
+  // 从 localStorage 加载项目列表
   function load(){
     try {
       // 版本号检查：旧版本数据直接清空（避免默认示例项目残留）
-      var ver = parseInt(localStorage.getItem(SCHEMA_VER_KEY) || '0', 10);
-      if (ver < SCHEMA_VER) {
-        localStorage.removeItem(KEY);
-        localStorage.setItem(SCHEMA_VER_KEY, String(SCHEMA_VER));
-        list = []; save();
+      var ver = parseInt(localStorage.getItem(SCHEMA_VER_KEY) || '0', 10); // 读出版本号，没有就当 0
+      if (ver < SCHEMA_VER) {                                              // 版本低于当前 → 清旧数据
+        localStorage.removeItem(KEY);                                      // 删除旧项目数据
+        localStorage.setItem(SCHEMA_VER_KEY, String(SCHEMA_VER));          // 写入新版本号
+        list = []; save();                                                 // 存空列表，标记为 v2
         return;
       }
-      var raw = localStorage.getItem(KEY);
-      if (raw) { list = JSON.parse(raw) || []; }
-      else { list = []; save(); }
-    } catch(e) { list = []; }
+      var raw = localStorage.getItem(KEY);                                 // 读取项目 JSON 字符串
+      if (raw) { list = JSON.parse(raw) || []; }                           // 解析成数组；解析失败用空数组
+      else { list = []; save(); }                                          // 没有数据就初始化空列表
+    } catch(e) { list = []; }                                              // 任何异常都用空列表兜底
   }
 
+  // 把项目列表保存到 localStorage，并触发云端同步
   function save(){
-    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e) {}
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e) {}   // 序列化成 JSON 存入
     // 触发云端同步（防抖）
-    if (window.debouncedPush) window.debouncedPush();
+    if (window.debouncedPush) window.debouncedPush();                      // 调用全局的防抖推送函数
   }
 
+  // 生成唯一 id：前缀 p_ + 时间戳 + 3 位随机数
   function genId(){ return 'p_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
 
+  // 把时间戳格式化成 "YYYY-MM-DD"
   function fmtDate(ts){
-    if (!ts) return '';
-    var d = new Date(ts);
+    if (!ts) return '';                                                    // 没传时间戳就返回空
+    var d = new Date(ts);                                                  // 转成 Date 对象
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    // 月份从 0 开始所以 +1；padStart(2,'0') 保证两位数（如 9 → "09"）
   }
 
+  // 把用户输入的文本转义成安全的 HTML（防止 XSS 注入）
   function escapeHtml(s){
-    var div = document.createElement('div');
-    div.textContent = s || '';
-    return div.innerHTML;
+    var div = document.createElement('div');                              // 建一个临时 div
+    div.textContent = s || '';                                             // 用 textContent 写入（自动转义 < > & 等）
+    return div.innerHTML;                                                  // 读出转义后的 HTML 字符串
   }
 
+  // 渲染项目列表到页面
   function render(){
-    var container = document.getElementById('projectList');
-    if (!container) return;
-    if (list.length === 0) {
+    var container = document.getElementById('projectList');               // 项目列表容器
+    if (!container) return;                                                // 容器不存在就退出
+    if (list.length === 0) {                                               // 列表为空 → 显示空状态提示
       container.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--muted);">还没有项目，点击下方「+ 添加新项目」开始吧～</div>';
       return;
     }
-    var html = '';
-    list.forEach(function(p){
-      var statsHtml = '';
-      (p.stats || []).forEach(function(s){
+    var html = '';                                                         // 拼接所有项目卡片的 HTML
+    list.forEach(function(p){                                              // 遍历每个项目 p
+      var statsHtml = '';                                                  // 统计数据的 HTML
+      (p.stats || []).forEach(function(s){                                 // 遍历该项目的 3 组统计数据
         statsHtml += '<div class="stat-cell"><div class="num">' + escapeHtml(s.num) + '</div><div class="label">' + escapeHtml(s.label) + '</div></div>';
       });
-      var stackHtml = '';
-      (p.stack || []).forEach(function(t){
-        stackHtml += '<span class="chip">' + escapeHtml(t) + '</span>';
+      var stackHtml = '';                                                  // 技术栈标签的 HTML
+      (p.stack || []).forEach(function(t){                                 // 遍历技术栈数组
+        stackHtml += '<span class="chip">' + escapeHtml(t) + '</span>';    // 每个技术栈包成 chip 标签
       });
+      // 拼接整张项目卡片
       html += '<div class="proj-card glass-card" data-id="' + p.id + '">'
-        + '<div class="proj-card-actions">'
+        + '<div class="proj-card-actions">'                                // 右上角编辑/删除按钮组
         + '<button class="proj-action-btn edit" title="编辑">✏️</button>'
         + '<button class="proj-action-btn del" title="删除">🗑️</button>'
         + '</div>'
-        + '<div class="proj-head">'
+        + '<div class="proj-head">'                                        // 标题行：项目名 + 领域标签
         + '<div class="proj-title">' + escapeHtml(p.title) + '</div>'
         + '<span class="proj-field">' + escapeHtml(p.field) + '</span>'
         + '</div>'
-        + '<p class="proj-desc">' + escapeHtml(p.desc) + '</p>'
-        + '<div class="proj-stats">' + statsHtml + '</div>'
-        + '<div class="proj-stack">' + stackHtml + '</div>'
+        + '<p class="proj-desc">' + escapeHtml(p.desc) + '</p>'            // 项目描述
+        + '<div class="proj-stats">' + statsHtml + '</div>'                // 3 格统计数据
+        + '<div class="proj-stack">' + stackHtml + '</div>'                // 技术栈标签
         + (p.updatedAt ? '<div class="proj-updated">🕐 最后更新：' + fmtDate(p.updatedAt) + '</div>' : '')
         + '</div>';
     });
-    container.innerHTML = html;
+    container.innerHTML = html;                                            // 一次性写入所有卡片
 
-    // 绑定编辑/删除
+    // 绑定每张卡片的编辑/删除按钮事件
     container.querySelectorAll('.proj-card').forEach(function(card){
-      var id = card.getAttribute('data-id');
-      var editBtn = card.querySelector('.proj-action-btn.edit');
-      var delBtn = card.querySelector('.proj-action-btn.del');
-      if (editBtn) editBtn.addEventListener('click', function(e){ e.stopPropagation(); openModal(id); });
-      if (delBtn) delBtn.addEventListener('click', function(e){ e.stopPropagation(); deleteProject(id); });
+      var id = card.getAttribute('data-id');                               // 读出卡片对应的项目 id
+      var editBtn = card.querySelector('.proj-action-btn.edit');           // 编辑按钮
+      var delBtn = card.querySelector('.proj-action-btn.del');             // 删除按钮
+      if (editBtn) editBtn.addEventListener('click', function(e){ e.stopPropagation(); openModal(id); }); // 点编辑 → 打开模态框
+      if (delBtn) delBtn.addEventListener('click', function(e){ e.stopPropagation(); deleteProject(id); }); // 点删除 → 删除项目
     });
   }
 
+  // 打开编辑/新增模态框；传 id = 编辑，传 null = 新增
   function openModal(id){
-    editingId = id || null;
-    var titleEl = document.getElementById('projModalTitle');
-    if (titleEl) titleEl.textContent = id ? '编辑项目' : '添加新项目';
+    editingId = id || null;                                                // 记录当前编辑的项目 id
+    var titleEl = document.getElementById('projModalTitle');               // 模态框标题元素
+    if (titleEl) titleEl.textContent = id ? '编辑项目' : '添加新项目';      // 根据是否传 id 切换标题
 
-    if (id) {
-      var p = list.find(function(x){ return x.id === id; });
-      if (!p) return;
-      setVal('projInputTitle', p.title);
-      setVal('projInputField', p.field);
-      setVal('projInputDesc', p.desc);
-      var stats = p.stats || [];
-      setVal('projInputStat1Num', stats[0] ? stats[0].num : '');
-      setVal('projInputStat1Label', stats[0] ? stats[0].label : '');
-      setVal('projInputStat2Num', stats[1] ? stats[1].num : '');
-      setVal('projInputStat2Label', stats[1] ? stats[1].label : '');
-      setVal('projInputStat3Num', stats[2] ? stats[2].num : '');
-      setVal('projInputStat3Label', stats[2] ? stats[2].label : '');
-      setVal('projInputStack', (p.stack || []).join(', '));
-    } else {
+    if (id) {                                                              // 编辑模式：把项目数据填进表单
+      var p = list.find(function(x){ return x.id === id; });                // 找到对应项目
+      if (!p) return;                                                       // 找不到就退出
+      setVal('projInputTitle', p.title);                                    // 填标题
+      setVal('projInputField', p.field);                                    // 填领域
+      setVal('projInputDesc', p.desc);                                      // 填描述
+      var stats = p.stats || [];                                            // 统计数据
+      setVal('projInputStat1Num', stats[0] ? stats[0].num : '');            // 第 1 组数字
+      setVal('projInputStat1Label', stats[0] ? stats[0].label : '');        // 第 1 组标签
+      setVal('projInputStat2Num', stats[1] ? stats[1].num : '');            // 第 2 组数字
+      setVal('projInputStat2Label', stats[1] ? stats[1].label : '');        // 第 2 组标签
+      setVal('projInputStat3Num', stats[2] ? stats[2].num : '');            // 第 3 组数字
+      setVal('projInputStat3Label', stats[2] ? stats[2].label : '');        // 第 3 组标签
+      setVal('projInputStack', (p.stack || []).join(', '));                 // 技术栈用逗号连接填入
+    } else {                                                                // 新增模式：清空所有输入框
       ['projInputTitle','projInputField','projInputDesc',
        'projInputStat1Num','projInputStat1Label',
        'projInputStat2Num','projInputStat2Label',
        'projInputStat3Num','projInputStat3Label','projInputStack'].forEach(function(id){ setVal(id, ''); });
     }
-    var mask = document.getElementById('projModalMask');
-    if (mask) mask.style.display = 'flex';
+    var mask = document.getElementById('projModalMask');                    // 模态框遮罩
+    if (mask) mask.style.display = 'flex';                                  // 显示模态框
   }
 
+  // 关闭模态框
   function closeModal(){
     var mask = document.getElementById('projModalMask');
-    if (mask) mask.style.display = 'none';
-    editingId = null;
+    if (mask) mask.style.display = 'none';                                  // 隐藏遮罩
+    editingId = null;                                                       // 清空编辑状态
   }
 
+  // 工具：给指定 id 的输入框设值
   function setVal(id, v){
     var el = document.getElementById(id);
-    if (el) el.value = v || '';
+    if (el) el.value = v || '';                                             // 没传值就设为空字符串
   }
+  // 工具：读取指定 id 输入框的值（去掉首尾空格）
   function getVal(id){
     var el = document.getElementById(id);
     return el ? el.value.trim() : '';
   }
 
+  // 保存项目（新增或更新）
   function saveProject(){
-    var title = getVal('projInputTitle');
-    if (!title) { toast('请填写项目标题'); return; }
-    var field = getVal('projInputField');
-    var desc = getVal('projInputDesc');
-    var stats = [];
+    var title = getVal('projInputTitle');                                   // 读取标题
+    if (!title) { toast('请填写项目标题'); return; }                        // 标题必填，否则提示
+    var field = getVal('projInputField');                                   // 读取领域标签
+    var desc = getVal('projInputDesc');                                     // 读取描述
+    var stats = [];                                                         // 收集 3 组统计数据
     for (var i = 1; i <= 3; i++) {
-      var num = getVal('projInputStat' + i + 'Num');
-      var label = getVal('projInputStat' + i + 'Label');
-      if (num || label) stats.push({ num: num || '—', label: label || '—' });
+      var num = getVal('projInputStat' + i + 'Num');                        // 第 i 组数字
+      var label = getVal('projInputStat' + i + 'Label');                    // 第 i 组标签
+      if (num || label) stats.push({ num: num || '—', label: label || '—' }); // 有任一值就加入，空的用 "—" 占位
     }
-    var stackRaw = getVal('projInputStack');
+    var stackRaw = getVal('projInputStack');                                // 技术栈原始字符串
+    // 用逗号、中文逗号、空白字符分割，过滤掉空项
     var stack = stackRaw ? stackRaw.split(/[,，\s]+/).filter(function(s){ return s; }) : [];
-    var now = Date.now();
+    var now = Date.now();                                                   // 当前时间戳
 
-    if (editingId) {
-      var idx = list.findIndex(function(x){ return x.id === editingId; });
+    if (editingId) {                                                        // 编辑已有项目
+      var idx = list.findIndex(function(x){ return x.id === editingId; });  // 找到该项目在数组中的下标
       if (idx >= 0) {
-        list[idx].title = title;
-        list[idx].field = field;
-        list[idx].desc = desc;
-        list[idx].stats = stats;
-        list[idx].stack = stack;
-        list[idx].updatedAt = now;
+        list[idx].title = title;                                            // 更新标题
+        list[idx].field = field;                                            // 更新领域
+        list[idx].desc = desc;                                              // 更新描述
+        list[idx].stats = stats;                                            // 更新统计
+        list[idx].stack = stack;                                            // 更新技术栈
+        list[idx].updatedAt = now;                                          // 更新时间戳
       }
       toast('项目已更新');
-    } else {
-      list.push({
+    } else {                                                                // 新增项目
+      list.push({                                                           // 往数组末尾添加新项目
         id: genId(), title: title, field: field, desc: desc,
         stats: stats, stack: stack,
-        createdAt: now, updatedAt: now
+        createdAt: now, updatedAt: now                                      // 创建时间和更新时间都是 now
       });
       toast('新项目已添加');
     }
-    save();
-    render();
-    closeModal();
+    save();                                                                 // 存到 localStorage + 云端同步
+    render();                                                               // 重新渲染列表
+    closeModal();                                                           // 关闭模态框
   }
 
+  // 删除项目
   function deleteProject(id){
-    var p = list.find(function(x){ return x.id === id; });
-    if (!p) return;
-    if (!confirm('确定要删除项目「' + p.title + '」吗？此操作不可撤销。')) return;
-    list = list.filter(function(x){ return x.id !== id; });
-    save();
-    render();
+    var p = list.find(function(x){ return x.id === id; });                  // 找到要删除的项目
+    if (!p) return;                                                         // 找不到就退出
+    if (!confirm('确定要删除项目「' + p.title + '」吗？此操作不可撤销。')) return; // 二次确认
+    list = list.filter(function(x){ return x.id !== id; });                 // 过滤掉该项目
+    save();                                                                 // 保存
+    render();                                                               // 重新渲染
     toast('项目已删除');
   }
 
-  // 初始化
+  // 初始化：加载数据并渲染
   load();
   render();
 
-  // 绑定事件
+  // 绑定各按钮事件
   var addBtn = document.getElementById('projAddBtn');
-  if (addBtn) addBtn.addEventListener('click', function(){ openModal(null); });
+  if (addBtn) addBtn.addEventListener('click', function(){ openModal(null); }); // 点"添加新项目" → 新增
   var closeBtn = document.getElementById('projModalClose');
-  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);                   // 点 × 关闭
   var cancelBtn = document.getElementById('projModalCancel');
-  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);                 // 点取消关闭
   var saveBtn = document.getElementById('projModalSave');
-  if (saveBtn) saveBtn.addEventListener('click', saveProject);
+  if (saveBtn) saveBtn.addEventListener('click', saveProject);                    // 点保存
   var mask = document.getElementById('projModalMask');
-  if (mask) mask.addEventListener('click', function(e){ if (e.target === mask) closeModal(); });
+  if (mask) mask.addEventListener('click', function(e){ if (e.target === mask) closeModal(); }); // 点遮罩空白处关闭
   document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && mask && mask.style.display === 'flex') closeModal();
+    if (e.key === 'Escape' && mask && mask.style.display === 'flex') closeModal();// 按 Esc 关闭模态框
   });
-  // 暴露 reload 给 Gist 同步调用
+  // 暴露 reload 给 Gist 同步调用：云端数据更新后重新加载并渲染
   window.reloadProjects = function(){ load(); render(); };
 })();
 
