@@ -1365,7 +1365,7 @@ function toast(msg, duration) {
   var el = document.getElementById('siteDays');
   if (!el) return;
   // 建站起始日期，可自行修改（本地时间，参数：年, 月-1, 日）
-  var startDate = new Date(2026, 7, 9);
+  var startDate = new Date(2026, 9, 8);
   var now = new Date();
   var days = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
   el.textContent = days > 0 ? days : '';
