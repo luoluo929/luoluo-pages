@@ -2263,7 +2263,8 @@ function toast(msg, duration) {
     var sk = {};
     SKILLS.forEach(function(s){ sk[s.id] = s.progress; });
     b.skills = sk;
-    try { var p = localStorage.getItem(SYNC_KEYS.projects); b.projects = p ? JSON.parse(p) : []; } catch(e){ b.projects = []; }
+    // projects：空数组写 null（避免误清空其他设备的非空数据；用户主动清空不同步是可接受 trade-off）
+    try { var p = localStorage.getItem(SYNC_KEYS.projects); b.projects = (p && JSON.parse(p).length) ? JSON.parse(p) : null; } catch(e){ b.projects = null; }
     var mv = localStorage.getItem(SYNC_KEYS.music_volume);
     b.music_volume = (mv != null && !isNaN(parseFloat(mv))) ? parseFloat(mv) : null;
     return b;
@@ -2323,9 +2324,9 @@ function toast(msg, duration) {
         localDirty = false;
         showSyncStatus('✅ 已同步到云端', 2000);
       }).catch(function(err){
+        localDirty = false;   // 失败也清 dirty，避免轮询永久跳过；下次编辑会重新置脏
         if (err && err.message === 'no token') {
           showSyncStatus('💾 已保存（未登录 token，不同步云端）', 2500);
-          localDirty = false;
         } else {
           showSyncStatus('⚠️ 保存成功但云端同步失败', 2500);
         }
