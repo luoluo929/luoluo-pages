@@ -966,13 +966,15 @@
     .game-panel iframe { height: 500px; }
   }
   /* ===== 项目自定义系统 ===== */
-  .proj-card { position: relative; }
+  .proj-card { position: relative; }         /* 相对定位，作为操作按钮的定位参照 */
+  /* 卡片右上角的编辑/删除按钮组，默认透明 */
   .proj-card-actions {
     position: absolute; top: 12px; right: 12px;
-    display: flex; gap: 6px; opacity: 0;
+    display: flex; gap: 6px; opacity: 0;      /* 默认隐藏 */
     transition: opacity 0.2s;
   }
-  .proj-card:hover .proj-card-actions { opacity: 1; }
+  .proj-card:hover .proj-card-actions { opacity: 1; } /* 鼠标悬停卡片时显示按钮 */
+  /* 单个操作按钮（编辑/删除） */
   .proj-action-btn {
     width: 30px; height: 30px; border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.2);
@@ -981,8 +983,9 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; transition: all 0.2s;
   }
-  .proj-action-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
-  .proj-action-btn.del:hover { background: rgba(255,80,80,0.3); border-color: rgba(255,80,80,0.5); }
+  .proj-action-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); } /* 悬停放大 */
+  .proj-action-btn.del:hover { background: rgba(255,80,80,0.3); border-color: rgba(255,80,80,0.5); } /* 删除按钮悬停变红 */
+  /* "添加新项目"按钮：虚线边框 */
   .proj-add-btn {
     padding: 12px 28px; border-radius: 14px;
     border: 2px dashed rgba(100,160,255,0.4);
@@ -995,24 +998,27 @@
     border-color: rgba(100,160,255,0.7);
     transform: translateY(-2px);
   }
+  /* 卡片底部"最后更新"文字 */
   .proj-updated {
     margin-top: 10px; font-size: 11px; color: var(--muted);
     display: flex; align-items: center; gap: 4px;
   }
-  /* 模态框 */
+  /* ===== 项目编辑模态框 ===== */
+  /* 模态框遮罩：全屏半透明黑色 + 模糊 */
   .proj-modal-mask {
-    position: fixed; inset: 0; z-index: 9999;
+    position: fixed; inset: 0; z-index: 9999;  /* 全屏覆盖，最高层级 */
     background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center;
-    padding: 20px; animation: fadeIn 0.2s;
+    padding: 20px; animation: fadeIn 0.2s;     /* 淡入动画 */
   }
+  /* 模态框主体：深色玻璃风 */
   .proj-modal {
-    background: linear-gradient(160deg, #484848 0%, #383838 100%);
+    background: linear-gradient(160deg, #484848 0%, #383838 100%); /* 深灰渐变 */
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 20px; width: 100%; max-width: 520px;
-    max-height: 88vh; overflow-y: auto;
+    max-height: 88vh; overflow-y: auto;        /* 内容超 88% 屏高时滚动 */
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    animation: slideUp 0.25s;
+    animation: slideUp 0.25s;                  /* 从下滑入动画 */
   }
   .proj-modal-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -1020,6 +1026,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .proj-modal-head h3 { margin: 0; font-size: 18px; font-weight: 700; color: #fff; }
+  /* 关闭按钮 × */
   .proj-modal-close {
     width: 32px; height: 32px; border-radius: 8px;
     border: none; background: rgba(255,255,255,0.08);
@@ -1028,12 +1035,13 @@
     transition: background 0.2s;
   }
   .proj-modal-close:hover { background: rgba(255,255,255,0.18); }
-  .proj-modal-body { padding: 18px 24px; }
-  .form-field { margin-bottom: 16px; }
+  .proj-modal-body { padding: 18px 24px; }     /* 表单内容区 */
+  .form-field { margin-bottom: 16px; }         /* 每个表单字段间距 */
   .form-field label {
     display: block; font-size: 13px; font-weight: 600;
     color: #ccc; margin-bottom: 6px;
   }
+  /* 表单输入框和文本域：深色主题 */
   .form-field input, .form-field textarea {
     width: 100%; box-sizing: border-box;
     padding: 10px 14px; border-radius: 10px;
@@ -1047,17 +1055,20 @@
     border-color: rgba(255,255,255,0.3);
   }
   .form-field input::placeholder, .form-field textarea::placeholder {
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.4);               /* 占位文字半透明白 */
   }
   .form-field textarea { resize: vertical; min-height: 60px; }
+  /* 统计数据输入区：3 行，每行数字+标签 */
   .proj-stats-inputs { display: flex; flex-direction: column; gap: 8px; }
   .stat-input-row { display: flex; gap: 8px; }
-  .stat-input-row input { flex: 1; }
+  .stat-input-row input { flex: 1; }           /* 两个输入框平分宽度 */
+  /* 模态框底部按钮区 */
   .proj-modal-foot {
     display: flex; justify-content: flex-end; gap: 10px;
     padding: 16px 24px 20px;
     border-top: 1px solid rgba(255,255,255,0.08);
   }
+  /* 模态框按钮通用样式 */
   .proj-btn {
     padding: 10px 22px; border-radius: 10px;
     border: none; font-size: 14px; font-weight: 600;
@@ -1072,6 +1083,7 @@
     color: #fff;
   }
   .proj-btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,255,255,0.15); }
+  /* 模态框滑入动画 */
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ===== 管理员更新日志（时间线样式） ===== */
