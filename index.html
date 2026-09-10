@@ -1325,35 +1325,38 @@
 
     </div>
 
+    <!-- 页面底部标语 -->
     <div class="model-note">
           ·     努力学习 · 天天向上 · 
     </div>
   </main>
 </div>
 
+<!-- 右上角悬浮音乐播放器：固定定位，播放键+音量键 -->
 <div class="music-float">
-  <button class="music-toggle" id="musicBtn" title="播放 / 暂停背景音乐">🎵</button>
-  <button class="music-toggle" id="volBtn" title="调节音量">🔊</button>
-  <!-- 音量滑块面板：点音量按钮后弹出，默认隐藏 -->
+  <button class="music-toggle" id="musicBtn" title="播放 / 暂停背景音乐">🎵</button>  <!-- 播放/暂停按钮 -->
+  <button class="music-toggle" id="volBtn" title="调节音量">🔊</button>                   <!-- 音量按钮：点击弹出滑块 -->
+  <!-- 音量滑块面板：点音量按钮后弹出（加 show 类），默认隐藏 -->
   <div class="music-vol-panel" id="volPanel">
-    <input type="range" id="volSlider" min="0" max="100" value="60" title="拖动调节音量">
+    <input type="range" id="volSlider" min="0" max="100" value="60" title="拖动调节音量">  <!-- 0~100 音量滑块，默认 60 -->
   </div>
 </div>
 
-<!-- Toast 容器 -->
+<!-- Toast 提示容器：JS 往里塞 .toast 元素，底部居中显示 -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ===== 项目编辑模态框 ===== -->
+<!-- ===== 项目编辑模态框（新增/编辑项目共用） ===== -->
+<!-- 遮罩层：display:none 隐藏，JS 设为 flex 显示 -->
 <div class="proj-modal-mask" id="projModalMask" style="display:none;">
   <div class="proj-modal">
     <div class="proj-modal-head">
-      <h3 id="projModalTitle">编辑项目</h3>
-      <button class="proj-modal-close" id="projModalClose">×</button>
+      <h3 id="projModalTitle">编辑项目</h3>          <!-- JS 根据新增/编辑改标题 -->
+      <button class="proj-modal-close" id="projModalClose">×</button>  <!-- 关闭按钮 -->
     </div>
     <div class="proj-modal-body">
       <div class="form-field">
         <label>项目标题</label>
-        <input type="text" id="projInputTitle" placeholder="例如：个人主页空间站" maxlength="30">
+        <input type="text" id="projInputTitle" placeholder="例如：个人主页空间站" maxlength="30">  <!-- 必填 -->
       </div>
       <div class="form-field">
         <label>领域标签</label>
@@ -1367,8 +1370,8 @@
         <label>统计数据（3 组，数字 + 标签）</label>
         <div class="proj-stats-inputs">
           <div class="stat-input-row">
-            <input type="text" id="projInputStat1Num" placeholder="数字" maxlength="8">
-            <input type="text" id="projInputStat1Label" placeholder="标签" maxlength="8">
+            <input type="text" id="projInputStat1Num" placeholder="数字" maxlength="8">   <!-- 第1组：数字 -->
+            <input type="text" id="projInputStat1Label" placeholder="标签" maxlength="8">  <!-- 第1组：标签 -->
           </div>
           <div class="stat-input-row">
             <input type="text" id="projInputStat2Num" placeholder="数字" maxlength="8">
@@ -1386,13 +1389,14 @@
       </div>
     </div>
     <div class="proj-modal-foot">
-      <button class="proj-btn proj-btn-cancel" id="projModalCancel">取消</button>
-      <button class="proj-btn proj-btn-save" id="projModalSave">保存</button>
+      <button class="proj-btn proj-btn-cancel" id="projModalCancel">取消</button>   <!-- 取消：关闭模态框 -->
+      <button class="proj-btn proj-btn-save" id="projModalSave">保存</button>       <!-- 保存：写入 localStorage + 云端同步 -->
     </div>
   </div>
 </div>
 
-<!-- ===== 管理员：密码门（彩蛋入口，页面上没有任何按钮） ===== -->
+<!-- ===== 管理员：密码门（彩蛋入口，页面上没有按钮） ===== -->
+<!-- 解锁方式：快速点击头像 5 次 或 按 Ctrl+L。密码：929 -->
 <div class="proj-modal-mask" id="adminPassMask" style="display:none;">
   <div class="proj-modal" id="adminPassBox">
     <div class="proj-modal-head">
@@ -1402,7 +1406,7 @@
     <div class="proj-modal-body">
       <div class="form-field">
         <label for="adminPassInput">请输入管理员密码</label>
-        <input type="password" id="adminPassInput" placeholder="输入密码后按回车" autocomplete="off">
+        <input type="password" id="adminPassInput" placeholder="输入密码后按回车" autocomplete="off">  <!-- 密码输入框 -->
       </div>
     </div>
     <div class="proj-modal-foot">
@@ -1412,20 +1416,20 @@
   </div>
 </div>
 
-<!-- ===== 管理员：网页更新日志面板 ===== -->
+<!-- ===== 管理员：网页更新日志面板（解锁后可打开） ===== -->
 <div class="proj-modal-mask" id="adminLogMask" style="display:none;">
   <div class="proj-modal" style="max-width:600px;">
     <div class="proj-modal-head">
       <h3>📋 网页更新日志</h3>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="proj-modal-close" id="adminTokenBtn" title="设置 GitHub Token 以启用云端同步" style="width:auto;padding:0 12px;font-size:13px;">☁️ 云端同步</button>
-        <button class="proj-modal-close" id="adminLockBtn" title="锁定日志：下次打开需重新输入密码" style="width:auto;padding:0 12px;font-size:13px;">🔒 锁定</button>
+        <button class="proj-modal-close" id="adminTokenBtn" title="设置 GitHub Token 以启用云端同步" style="width:auto;padding:0 12px;font-size:13px;">☁️ 云端同步</button>  <!-- 设置 Gist token -->
+        <button class="proj-modal-close" id="adminLockBtn" title="锁定日志：下次打开需重新输入密码" style="width:auto;padding:0 12px;font-size:13px;">🔒 锁定</button>     <!-- 锁定管理员状态 -->
         <button class="proj-modal-close" id="adminLogClose">×</button>
       </div>
     </div>
     <div class="proj-modal-body">
       <div class="changelog-tip">💡 以后每次改完网页，在页面底部 <code>CHANGELOG</code> 数组最上面加一条记录即可（日期、类型、标题、说明）</div>
-      <div id="changelogList"></div>
+      <div id="changelogList"></div>  <!-- JS 根据 CHANGELOG 数组渲染日志时间线 -->
     </div>
   </div>
 </div>
