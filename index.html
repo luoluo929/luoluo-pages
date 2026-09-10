@@ -2760,7 +2760,13 @@ function toast(msg, duration) {
             p.style.width = p.style.height = (Math.random() * 3 + 3) + 'px';
             particlesEl.appendChild(p);
         }
-    
+ <!-- HTML 部分 -->
+<div class="time-display">
+  <div class="time" id="liveTime">--:--:--</div>
+  <div class="date" id="liveDate">----年--月--日 星期-</div>
+</div>
+
+        
   }
 })();
 </script>
