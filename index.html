@@ -489,28 +489,32 @@
   }
 
   /* ===== 留言板 ===== */
+  /* 留言卡片容器（玻璃风格） */
   .guest-card {
     padding: 24px 26px;
     margin-bottom: 22px;
   }
+  /* 留言输入框和文本域共用样式 */
   .guest-input, .guest-textarea {
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 11px 14px;
     font-size: 14px;
-    font-family: inherit;
+    font-family: inherit;                   /* 继承页面字体 */
     color: var(--text);
-    background: rgba(255,255,255,0.75);
-    outline: none;
-    transition: border-color .2s, box-shadow .2s;
+    background: rgba(255,255,255,0.75);     /* 半透明白底 */
+    outline: none;                          /* 去掉默认聚焦轮廓 */
+    transition: border-color .2s, box-shadow .2s; /* 聚焦时平滑过渡 */
   }
-  .guest-input { margin-bottom: 12px; max-width: 260px; }
-  .guest-textarea { resize: vertical; min-height: 84px; margin-bottom: 14px; }
+  .guest-input { margin-bottom: 12px; max-width: 260px; } /* 昵称输入框：限宽 260px */
+  .guest-textarea { resize: vertical; min-height: 84px; margin-bottom: 14px; } /* 留言框：只能纵向拖大，最小高 84px */
+  /* 聚焦状态：蓝色边框 + 蓝色光晕 */
   .guest-input:focus, .guest-textarea:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
+  /* 发布按钮 */
   .guest-btn {
     background: var(--accent);
     color: #fff;
@@ -521,25 +525,26 @@
     font-weight: 600;
     cursor: pointer;
     transition: all .2s;
-    box-shadow: 0 6px 16px rgba(47,111,208,0.30);
+    box-shadow: 0 6px 16px rgba(47,111,208,0.30); /* 蓝色投影 */
   }
-  .guest-btn:hover { transform: translateY(-2px); opacity: .92; }
-  .guest-list { display: flex; flex-direction: column; gap: 14px; }
-  .gb-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 30px 0; }
+  .guest-btn:hover { transform: translateY(-2px); opacity: .92; } /* 悬停：上浮 2px + 微透明 */
+  .guest-list { display: flex; flex-direction: column; gap: 14px; } /* 留言列表：纵向排列 */
+  .gb-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 30px 0; } /* 空留言提示 */
+  /* 单条留言卡片 */
   .guest-item {
     padding: 18px 22px;
   }
   .guest-head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between;        /* 昵称左、时间右 */
     gap: 12px;
     margin-bottom: 8px;
   }
-  .guest-name { font-size: 15px; font-weight: 700; color: var(--accent); }
-  .guest-time { font-size: 12px; color: var(--muted); }
-  .guest-content { font-size: 14px; color: var(--text); line-height: 1.7; word-break: break-word; }
-  .guest-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .guest-name { font-size: 15px; font-weight: 700; color: var(--accent); } /* 留言者昵称 */
+  .guest-time { font-size: 12px; color: var(--muted); }                     /* 留言时间 */
+  .guest-content { font-size: 14px; color: var(--text); line-height: 1.7; word-break: break-word; } /* 留言内容：长单词自动断行 */
+  .guest-actions { margin-top: 10px; display: flex; gap: 8px; } /* 操作按钮行（回复/删除） */
   .reply-btn, .del-btn {
     background: transparent;
     border: 1px solid var(--border);
