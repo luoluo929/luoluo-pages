@@ -419,34 +419,38 @@
   .energy-line .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 
   /* ===== 学习路线时间线（原"我的SKILL"页改造，修复 P4 内容重复） ===== */
+  /* 时间线容器：左边留 32px 放圆点和竖线 */
   .timeline {
     position: relative;
     padding-left: 32px;
   }
+  /* 时间线竖线（伪元素）：从上到下的渐变线 */
   .timeline::before {
     content: '';
     position: absolute;
-    left: 11px;
+    left: 11px;                              /* 与圆点中心对齐 */
     top: 6px;
     bottom: 6px;
     width: 2px;
-    background: linear-gradient(180deg, var(--accent-2), var(--accent-soft));
+    background: linear-gradient(180deg, var(--accent-2), var(--accent-soft)); /* 上浅下淡渐变 */
     border-radius: 2px;
   }
+  /* 单个时间线条目 */
   .tl-item {
     position: relative;
-    padding: 0 0 28px 0;
+    padding: 0 0 28px 0;                    /* 条目之间留 28px 间距 */
   }
-  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item:last-child { padding-bottom: 0; } /* 最后一条不留底部间距 */
+  /* 时间线圆点 */
   .tl-dot {
     position: absolute;
-    left: -32px;
+    left: -32px;                            /* 往左移到竖线上 */
     top: 4px;
     width: 24px;
     height: 24px;
-    border-radius: 50%;
-    background: var(--card-solid);
-    border: 2px solid var(--accent);
+    border-radius: 50%;                     /* 正圆 */
+    background: var(--card-solid);          /* 白底 */
+    border: 2px solid var(--accent);        /* 蓝色描边 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -455,11 +459,13 @@
     font-weight: 700;
     box-shadow: 0 2px 8px rgba(47,111,208,0.25);
   }
+  /* 当前阶段的圆点：蓝底白字 + 呼吸动画 */
   .tl-item.current .tl-dot {
     background: var(--accent);
     color: #fff;
-    animation: tl-pulse 2s ease-in-out infinite;
+    animation: tl-pulse 2s ease-in-out infinite; /* 2 秒一次呼吸 */
   }
+  /* 呼吸动画：阴影大小变化 */
   @keyframes tl-pulse {
     0%, 100% { box-shadow: 0 2px 8px rgba(47,111,208,0.25); }
     50% { box-shadow: 0 2px 16px rgba(47,111,208,0.55); }
@@ -470,9 +476,9 @@
     color: var(--accent);
     margin-bottom: 4px;
   }
-  .tl-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-  .tl-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
-  .tl-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tl-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; } /* 阶段标题 */
+  .tl-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }   /* 阶段描述 */
+  .tl-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; } /* 标签行，可换行 */
   .tl-tag {
     font-size: 11px;
     background: var(--accent-soft);
