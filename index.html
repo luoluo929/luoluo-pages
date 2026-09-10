@@ -1761,6 +1761,31 @@ function toast(msg, duration) {
     hideMask(logMask);
   }
 
+  /* ----- GitHub Token 设置（管理员解锁后可用）----- */
+  function openTokenSetup(){
+    if (!isUnlocked()) { toast('🔒 需要管理员权限'); return; }
+    var cur = localStorage.getItem('gh_token') || '';
+    var val = prompt('设置 GitHub Token（仅存于本机浏览器，用于云端同步技能进度）:\n\n访问 https://github.com/settings/tokens 创建，只需勾选 gist 权限即可。', cur);
+    if (val === null) return;   // 用户取消
+    val = val.trim();
+    if (!val) {
+      localStorage.removeItem('gh_token');
+      toast('🗑️ Token 已清除，云端同步已禁用');
+    } else {
+      localStorage.setItem('gh_token', val);
+      toast('✅ Token 已保存，云端同步已启用');
+    }
+  }
+  // 快捷键 Ctrl+T 打开 Token 设置
+  document.addEventListener('keydown', function(e){
+    if (e.ctrlKey && (e.key === 't' || e.key === 'T')) {
+      e.preventDefault();
+      openTokenSetup();
+    }
+  });
+  // 在技能页右键也能打开（给个菜单入口）
+  window.openTokenSetup = openTokenSetup;
+
   /* ----- 事件绑定 ----- */
   document.getElementById('adminPassOk').addEventListener('click', checkPassword);
   passInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') checkPassword(); });
