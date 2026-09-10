@@ -1717,6 +1717,14 @@ function toast(msg, duration) {
       try { localStorage.setItem(UNLOCK_KEY, '1'); } catch(e){}
       hideMask(passMask);
       openLog();
+      // —— 管理员解锁后：提示设置 GitHub token 以启用云端同步 ——
+      if (!localStorage.getItem('gh_token')) {
+        setTimeout(function(){
+          var msg = '管理员已解锁！如需云端同步进度，请在终端运行: gh auth token → 复制到浏览器控制台执行: localStorage.setItem(\'gh_token\', \'你的token\')';
+          console.log('🔐 ' + msg);
+          if (typeof toast === 'function') toast('🔐 已解锁！控制台有 token 设置说明');
+        }, 500);
+      }
     } else {
       // 密码错误：弹窗抖动提示
       passBox.classList.remove('shake');
@@ -2212,6 +2220,45 @@ function toast(msg, duration) {
   var SKILLS_KEY = 'luoluo_skills_v1';   // localStorage 键名
 
   /* ============================================================
+     Gist 云端同步配置（GitHub Gist）
+     Gist ID: d548dd7aa9973ba21d6a0f85e5b32f60
+     想换 Gist 就改 GIST_ID，想换文件名改 GIST_FILENAME
+     ============================================================ */
+  var GIST_CONFIG = {
+    id: 'd548dd7aa9973ba21d6a0f85e5b32f60',
+    filename: 'skills-gist.json',
+    owner: 'luoluo929',
+    pollInterval: 30000   // 轮询间隔：30 秒
+  };
+  var GIST_RAW_URL = 'https://gist.githubusercontent.com/' + GIST_CONFIG.owner + '/' + GIST_CONFIG.id + '/raw/' + GIST_CONFIG.filename;
+  var GIST_API_URL = 'https://api.github.com/gists/' + GIST_CONFIG.id;
+
+  // —— 从 Gist 拉取进度（无需 token）——
+  function fetchFromGist(){
+    return fetch(GIST_RAW_URL + '?t=' + Date.now())
+      .then(function(r){ return r.ok ? r.text() : null; })
+      .then(function(txt){
+        if (!txt) return null;
+        try { return JSON.parse(txt); } catch(e) { return null; }
+      });
+  }
+  // —— 推送到 Gist（需要 token，从 localStorage 读）——
+  function pushToGist(){
+    var token = localStorage.getItem('gh_token');
+    if (!token) return Promise.reject(new Error('no token'));
+    var obj = {};
+    SKILLS.forEach(function(sk){ obj[sk.id] = sk.progress; });
+    obj.updated = new Date().toISOString();
+    var body = { files: {} };
+    body.files[GIST_CONFIG.filename] = { content: JSON.stringify(obj) };
+    return fetch(GIST_API_URL, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' },
+      body: JSON.stringify(body)
+    }).then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); });
+  }
+
+  /* ============================================================
      网站数据配置区
      ============================================================ */
   var SITES = [
@@ -2259,30 +2306,79 @@ function toast(msg, duration) {
     return '#' + [r,g,b].map(function(v){ return v.toString(16).padStart(2, '0'); }).join('');
   }
 
-  // —— 技能进度：localStorage 读取/保存 ——
+  // —— 技能进度：Gist 云端 + localStorage 兜底 ——
+  function applyProgressData(data){
+    if (!data) return false;
+    var changed = false;
+    SKILLS.forEach(function(sk){
+      if (data[sk.id] != null) {
+        var v = Math.max(0, Math.min(100, parseInt(data[sk.id], 10)));
+        if (v !== sk.progress) { sk.progress = v; changed = true; }
+      }
+    });
+    return changed;
+  }
   function loadSkillProgress(){
+    // 先设默认值
+    SKILLS.forEach(function(sk){ sk.progress = sk.defaultProgress; });
+    // 同步读 localStorage（快速显示）
     try {
       var raw = localStorage.getItem(SKILLS_KEY);
-      if (raw) {
-        var saved = JSON.parse(raw);
-        SKILLS.forEach(function(sk){
-          if (saved[sk.id] != null) sk.progress = Math.max(0, Math.min(100, parseInt(saved[sk.id], 10)));
-          else sk.progress = sk.defaultProgress;
-        });
-      } else {
-        SKILLS.forEach(function(sk){ sk.progress = sk.defaultProgress; });
+      if (raw) applyProgressData(JSON.parse(raw));
+    } catch(e) {}
+    // 异步从 Gist 拉取覆盖（云端为准）
+    fetchFromGist().then(function(cloud){
+      if (applyProgressData(cloud)) {
+        // 云端数据和本地不同，刷新 UI
+        if (typeof updateSkillCards === 'function') updateSkillCards();
       }
-    } catch(e) {
-      SKILLS.forEach(function(sk){ sk.progress = sk.defaultProgress; });
-    }
+      // 保存最新到 localStorage
+      saveSkillProgress(true);
+    }).catch(function(){});
   }
-  function saveSkillProgress(){
+  function saveSkillProgress(skipGist){
     try {
       var obj = {};
       SKILLS.forEach(function(sk){ obj[sk.id] = sk.progress; });
       localStorage.setItem(SKILLS_KEY, JSON.stringify(obj));
     } catch(e) {}
+    if (!skipGist) {
+      pushToGist().then(function(){
+        showSyncStatus('✅ 已同步到云端', 2000);
+      }).catch(function(err){
+        if (err && err.message === 'no token') {
+          showSyncStatus('💾 已保存（未登录 token，不同步云端）', 2500);
+        } else {
+          showSyncStatus('⚠️ 保存成功但云端同步失败', 2500);
+        }
+      });
+    }
   }
+  // —— 同步状态提示 ——
+  function showSyncStatus(msg, duration){
+    var tip = document.getElementById('skill-sync-tip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.id = 'skill-sync-tip';
+      tip.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);';
+      document.body.appendChild(tip);
+    }
+    tip.textContent = msg;
+    tip.style.opacity = '1';
+    clearTimeout(tip._t);
+    tip._t = setTimeout(function(){ tip.style.opacity = '0'; }, duration || 2000);
+  }
+  // —— 每 30 秒轮询 Gist 检查远端更新 ——
+  setInterval(function(){
+    if (document.getElementById('skillGrid')) {
+      fetchFromGist().then(function(cloud){
+        if (applyProgressData(cloud)) {
+          if (typeof updateSkillCards === 'function') updateSkillCards();
+          showSyncStatus('☁️ 云端进度已更新', 1500);
+        }
+      }).catch(function(){});
+    }
+  }, GIST_CONFIG.pollInterval);
 
   // —— 渲染技能卡片（含可拖动滑块 + 管理员权限门）——
   loadSkillProgress();
@@ -2361,6 +2457,20 @@ function toast(msg, duration) {
     setInterval(function(){
       skillGrid.querySelectorAll('.skill-bar').forEach(function(b){ if (b._refreshLock) b._refreshLock(); });
     }, 3000);
+
+    // —— 暴露 updateSkillCards：云端更新后刷新 UI ——
+    window.updateSkillCards = function(){
+      SKILLS.forEach(function(sk){
+        var card = skillGrid.querySelector('[data-skill-id="' + sk.id + '"]') || skillGrid.children[SKILLS.indexOf(sk)];
+        if (!card) return;
+        var fill = card.querySelector('.fill');
+        var pctEl = card.querySelector('.pct');
+        var slider = card.querySelector('.skill-slider');
+        if (fill) { fill.style.width = sk.progress + '%'; fill.setAttribute('data-w', sk.progress + '%'); }
+        if (pctEl) pctEl.textContent = sk.progress + '%';
+        if (slider) slider.value = sk.progress;
+      });
+    };
   }
 
   // —— 渲染手机 App 图标 ——
