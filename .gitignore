@@ -2,3 +2,6 @@ backup/
 .DS_Store
 Thumbs.db
 *.log
+# 自动推送脚本（不纳入版本控制）
+watch-push.ps1
+auto-push.*
