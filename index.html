@@ -2715,6 +2715,19 @@ function toast(msg, duration) {
       a.appendChild(icon); a.appendChild(info);
       socialGrid.appendChild(a);
     });
+
+        // 生成背景粒子
+        const particlesEl = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 8 + 6) + 's';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
+            particlesEl.appendChild(p);
+        }
+    
   }
 })();
 </script>
