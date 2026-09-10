@@ -1429,8 +1429,8 @@ function toast(msg, duration) {
      想增加其他格式（如 .ogg / .wav）：在下面数组里加一行路径即可
      ============================================================ */
   var MUSIC_URLS = [
-    'assets/yy.mp3',
-    'assets/yy.flac'
+    'assets/yy.mp3'
+    // flac 11MB 太大已移除：想用文件音乐请放 mp3（建议 < 2MB，128kbps）
   ];
 
   var isPlaying = false;   // 统一状态：音乐是否在播放（不管走哪一路）
@@ -1443,42 +1443,44 @@ function toast(msg, duration) {
     if (savedVol !== null) masterVolume = Math.min(1, Math.max(0, parseFloat(savedVol)));
   } catch(e) {}
 
-  // ===== 第 1 路：音频文件播放（自动探测 mp3 / flac）=====
+  // ===== 第 1 路：音频文件播放（只探测 mp3，失败立即回退合成音乐）=====
   var mp3 = new Audio();
   mp3.loop = true;        // 单曲循环
   mp3.volume = masterVolume;   // 文件音乐音量 = 总音量
-  var fileIdx = 0;            // 当前正在尝试第几个文件
-  var fileState = 'loading';  // loading=检测中 / ready=有文件可用 / failed=所有文件都不可用
+  var fileState = 'loading';  // loading=检测中 / ready=有文件可用 / failed=文件不可用
 
-  function loadFile(i){
-    fileIdx = i;
+  function loadFile(){
     fileState = 'loading';
-    mp3.src = MUSIC_URLS[i];
+    mp3.src = MUSIC_URLS[0];
     mp3.load();
+    // 超时保护：5 秒还没加载好就回退合成音乐，避免卡死
+    clearTimeout(loadFile._t);
+    loadFile._t = setTimeout(function(){
+      if (fileState === 'loading') {
+        fileState = 'failed';
+        console.log('🎵 mp3 加载超时，回退合成音乐');
+        if (isPlaying) startSynth();
+      }
+    }, 5000);
   }
 
   mp3.oncanplaythrough = function(){
     fileState = 'ready';
-    console.log('🎵 背景音乐：使用音频文件 ' + MUSIC_URLS[fileIdx]);
+    clearTimeout(loadFile._t);
+    console.log('🎵 背景音乐：使用音频文件 ' + MUSIC_URLS[0]);
     // 用户在文件加载完成前就点了播放 → 加载好后自动续上
     if (isPlaying) { var p = mp3.play(); if (p && p.catch) p.catch(function(){}); }
   };
 
   mp3.onerror = function(){
-    console.log('🎵 未能加载 ' + MUSIC_URLS[fileIdx]);
+    console.log('🎵 未能加载 ' + MUSIC_URLS[0] + '，使用合成音乐');
+    clearTimeout(loadFile._t);
     mp3.pause();
-    if (fileIdx + 1 < MUSIC_URLS.length) {
-      // 还有下一个候选文件 → 继续探测（isPlaying 时，新文件加载好后会自动播放）
-      loadFile(fileIdx + 1);
-    } else {
-      // 所有文件都失败 → 回退到代码合成音乐
-      fileState = 'failed';
-      console.log('🎵 所有音频文件都不可用，自动使用代码合成音乐');
-      if (isPlaying) startSynth();
-    }
+    fileState = 'failed';
+    if (isPlaying) startSynth();
   };
 
-  loadFile(0);   // 页面一打开就开始探测第一个文件
+  loadFile();   // 页面一打开就开始探测 mp3
 
   function playMp3(){
     var p = mp3.play();
