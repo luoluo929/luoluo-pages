@@ -2751,13 +2751,13 @@ function toast(msg, duration) {
 
         // 生成背景粒子
         const particlesEl = document.getElementById('particles');
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 15; i++) {
             const p = document.createElement('div');
             p.className = 'particle';
             p.style.left = Math.random() * 100 + '%';
             p.style.animationDuration = (Math.random() * 8 + 6) + 's';
             p.style.animationDelay = (Math.random() * 10) + 's';
-            p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
+            p.style.width = p.style.height = (Math.random() * 16 + 8) + 'px';
             particlesEl.appendChild(p);
         }
     
