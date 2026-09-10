@@ -1175,32 +1175,41 @@
 </head>
 <body>
 
-<!-- 背景粒子层 -->
+<!-- 背景粒子层：JS 会往里塞 11 个 .particle 粒子 -->
 <div id="particles"></div>
 
+<!-- 页面整体布局：左导航 + 右内容 -->
 <div class="layout">
 
   <!-- ===== 左侧导航栏 ===== -->
+  <!-- aside 语义化标签：侧边栏。sticky 定位，滚动时固定在左侧 -->
   <aside class="sidebar">
+    <!-- 头像 + 昵称区 -->
     <div class="side-top">
+      <!-- 头像图片：加载失败时用 onerror 回退成带"L"字的 SVG 占位图 -->
       <img class="side-avatar" src="assets/avatar.jpg" alt="luoluo 头像" onerror="this.style.background='var(--accent-soft)';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 88 88%22><rect fill=%22%232f6fd0%22 width=%2288%22 height=%2288%22/><text x=%2244%22 y=%2256%22 font-size=%2236%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22sans-serif%22>L</text></svg>';">
       <div>
+        <!-- 昵称：改这里改名字 -->
         <div class="side-title">luoluo · 升级中
         </div>
+        <!-- 副标题：个性签名 -->
         <div class="side-sub">无名小卒唧唧向上中～</div>
       </div>
     </div>
+    <!-- 翻页提示条：提示用户可左右滑动/键盘翻页 -->
     <div class="flip-hint"><span class="arrow">◀</span> 滑动翻页 <span class="arrow">▶</span></div>
+    <!-- 导航菜单列表：data-page 对应页面 id，JS 用它切换页面 -->
     <ul class="nav-list" id="navList">
-      <li class="nav-item active" data-page="projects"><span>近期执行</span><span class="page-no">1</span></li>
+      <li class="nav-item active" data-page="projects"><span>近期执行</span><span class="page-no">1</span></li>  <!-- active = 默认显示第1页 -->
       <li class="nav-item" data-page="skills"><span>技能进度条</span><span class="page-no">2</span></li>
       <li class="nav-item" data-page="games"><span>小游戏</span><span class="page-no">3</span></li>
       <li class="nav-item" data-page="sites"><span>有趣的网站</span><span class="page-no">4</span></li>
       <li class="nav-item" data-page="guestbook"><span>留言</span><span class="page-no">5</span></li>
     </ul>
+    <!-- 侧栏底部：建站天数 -->
     <div class="side-bottom">
       <div class="site-days">
-        本站已运行<br><span class="num" id="siteDays">—</span> 天
+        本站已运行<br><span class="num" id="siteDays">—</span> 天  <!-- JS 把天数填到 #siteDays -->
       </div>
     </div>
   </aside>
