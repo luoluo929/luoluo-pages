@@ -268,67 +268,70 @@
   }
 
   /* ===== 技能页（卡片式） ===== */
+  /* 技能卡片网格：两列 */
   .skill-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);    /* 两列等宽 */
     gap: 20px;
   }
   .skill-card {
     padding: 24px;
   }
-  .skill-card .s-name { font-size: 17px; font-weight: 700; display:flex; align-items:center; gap:10px; }
-  .skill-card .s-desc { font-size: 13px; color: var(--muted); margin-top: 6px; }
-  .skill-bar-wrap { margin-top: 14px; }
-  .skill-bar-label { display:flex; justify-content:space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .skill-card .s-name { font-size: 17px; font-weight: 700; display:flex; align-items:center; gap:10px; } /* 技能名：图标+文字横排 */
+  .skill-card .s-desc { font-size: 13px; color: var(--muted); margin-top: 6px; } /* 技能描述 */
+  .skill-bar-wrap { margin-top: 14px; }        /* 进度条外层包裹 */
+  .skill-bar-label { display:flex; justify-content:space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; } /* "掌握度" + 百分比 两端对齐 */
+  /* 进度条轨道：玻璃质感凹槽 */
   .skill-bar {
-    position: relative;
-    height: 10px;
-    background: rgba(255,255,255,0.35);
+    position: relative;                       /* 作为滑块和填充的定位参照 */
+    height: 10px;                             /* 轨道高度 */
+    background: rgba(255,255,255,0.35);        /* 半透明白底 */
     border: 1px solid rgba(255,255,255,0.5);
-    border-radius: 99px;
-    overflow: visible;
-    backdrop-filter: blur(6px);
+    border-radius: 99px;                      /* 胶囊形 */
+    overflow: visible;                        /* 允许滑块超出轨道 */
+    backdrop-filter: blur(6px);                /* 毛玻璃 */
     -webkit-backdrop-filter: blur(6px);
     box-shadow:
-      inset 0 1px 2px rgba(30,58,92,0.08),
-      inset 0 -1px 0 rgba(255,255,255,0.7);
+      inset 0 1px 2px rgba(30,58,92,0.08),     /* 内阴影：顶部凹陷感 */
+      inset 0 -1px 0 rgba(255,255,255,0.7);    /* 内高光：底部亮边 */
   }
+  /* 进度条填充：蓝色渐变，宽度由 JS 控制 */
   .skill-bar .fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    background: linear-gradient(90deg, var(--accent-2), var(--accent)); /* 浅蓝→深蓝渐变 */
     border-radius: 99px;
-    width: 0;
-    transition: width .6s ease;
+    width: 0;                                 /* 初始宽度 0，JS 设为实际进度 */
+    transition: width .6s ease;               /* 宽度变化 0.6 秒动画 */
     box-shadow:
-      0 0 8px rgba(47,111,208,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.4);
+      0 0 8px rgba(47,111,208,0.35),           /* 外发光 */
+      inset 0 1px 0 rgba(255,255,255,0.4);     /* 顶部内高光 */
     position: relative;
   }
-  /* 填充上的高光条，增加玻璃感 */
+  /* 填充上的高光条（伪元素），增加玻璃质感 */
   .skill-bar .fill::after {
     content: '';
     position: absolute;
     top: 1px; left: 0; right: 0;
-    height: 40%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
-    border-radius: 99px 99px 0 0;
-    pointer-events: none;
+    height: 40%;                              /* 只覆盖上半部分 */
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0)); /* 上白下透明渐变 */
+    border-radius: 99px 99px 0 0;             /* 只圆上角 */
+    pointer-events: none;                     /* 不拦截鼠标 */
   }
-  .skill-bar.dragging .fill { transition: none; }  /* 拖动时禁用过渡，让滑块跟手 */
-  /* 透明 range 覆盖在进度条上，拖动时直接操作 */
+  .skill-bar.dragging .fill { transition: none; }  /* 拖动时禁用过渡，让滑块跟手不延迟 */
+  /* 透明 range 滑块覆盖在进度条上，用户实际拖动的是它 */
   .skill-bar input[type="range"].skill-slider {
     position: absolute;
     top: 50%; left: 0;
     width: 100%;
-    height: 28px;
-    transform: translateY(-50%);
-    background: transparent;
-    -webkit-appearance: none;
+    height: 28px;                            /* 比轨道高，方便点击拖动 */
+    transform: translateY(-50%);             /* 垂直居中 */
+    background: transparent;                 /* 透明，只显示自定义滑块 */
+    -webkit-appearance: none;                /* 去掉浏览器默认外观 */
     appearance: none;
     margin: 0;
     cursor: pointer;
     opacity: 1;
-    z-index: 2;
+    z-index: 2;                              /* 浮在填充之上 */
   }
   .skill-bar input[type="range"].skill-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
