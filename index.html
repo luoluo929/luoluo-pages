@@ -1379,98 +1379,103 @@ function toast(msg, duration) {
 
 // ===== 滑动翻页（修复 P5：加触摸手势）=====
 (function(){
-  var navItems = document.querySelectorAll('.nav-item');
-  var pages = document.querySelectorAll('.page');
-  // 修复 P6：social 加入已制作列表
+  var navItems = document.querySelectorAll('.nav-item');            // 左侧所有导航项
+  var pages = document.querySelectorAll('.page');                   // 所有页面容器
+  // 已制作完成的页面 id 列表（点击未制作的会提示"敬请期待"）
   var built = ['projects', 'skills', 'games', 'sites', 'guestbook'];
-  var current = 'projects';
+  var current = 'projects';                                          // 当前显示的页面 id
 
+  // id：要切到的页面；direction：'prev' 向左滑 / 'next' 向右滑
   function showPage(id, direction){
-    if (id === current) return;
-    var oldPage = document.getElementById('page-' + current);
-    var newPage = document.getElementById('page-' + id);
-    if (!newPage) return;
+    if (id === current) return;                                      // 已经是当前页就不处理
+    var oldPage = document.getElementById('page-' + current);        // 旧页面元素
+    var newPage = document.getElementById('page-' + id);             // 新页面元素
+    if (!newPage) return;                                            // 新页面不存在就退出
 
-    oldPage.classList.remove('active');
+    oldPage.classList.remove('active');                              // 旧页取消激活（淡出）
     if (direction === 'prev') {
-      oldPage.classList.add('in-left');
+      oldPage.classList.add('in-left');                              // 向左切时旧页往左滑出
     } else {
-      oldPage.classList.remove('in-left');
+      oldPage.classList.remove('in-left');                           // 向右切时旧页往右滑出
     }
-    newPage.classList.remove('in-left');
-    newPage.classList.add('active');
+    newPage.classList.remove('in-left');                             // 新页复位
+    newPage.classList.add('active');                                 // 新页激活（淡入）
 
+    // 同步导航项高亮：把 data-page 等于 id 的导航项设为 active
     navItems.forEach(function(n){ n.classList.toggle('active', n.getAttribute('data-page') === id); });
-    current = id;
+    current = id;                                                    // 更新当前页标记
 
-    // 进度条动画（每次切页重播）
+    // 进度条动画（每次切页重播）：先归零再设置到目标宽度，触发过渡动画
     requestAnimationFrame(function(){
       newPage.querySelectorAll('.fill').forEach(function(f){
-        f.style.width = '0%';
+        f.style.width = '0%';                                        // 先把进度条宽度设为 0
       });
       requestAnimationFrame(function(){
         newPage.querySelectorAll('.fill').forEach(function(f){
-          f.style.width = f.getAttribute('data-w');
+          f.style.width = f.getAttribute('data-w');                  // 再设回 data-w 存的目标宽度
         });
       });
     });
 
-    // 切页后滚动到顶部
+    // 切页后平滑滚动到页面顶部
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 导航点击
+  // 导航点击：点击左侧菜单切换页面
   navItems.forEach(function(n){
     n.addEventListener('click', function(){
-      var id = n.getAttribute('data-page');
-      if (built.indexOf(id) === -1) {
+      var id = n.getAttribute('data-page');                          // 读取点击项对应的页面 id
+      if (built.indexOf(id) === -1) {                                // 该页面还没制作
+        // 去掉导航文字里的页码数字，提示用户该页待制作
         toast('「' + n.textContent.trim().replace(/[0-9-]/g,'').trim() + '」页面待制作，敬请期待');
         return;
       }
-      var curIdx = built.indexOf(current);
-      var nextIdx = built.indexOf(id);
-      showPage(id, nextIdx < curIdx ? 'prev' : 'next');
+      var curIdx = built.indexOf(current);                           // 当前页在列表中的下标
+      var nextIdx = built.indexOf(id);                               // 目标页在列表中的下标
+      showPage(id, nextIdx < curIdx ? 'prev' : 'next');              // 目标在前就向左滑，否则向右滑
     });
   });
 
   // 键盘左右方向键翻页
   document.addEventListener('keydown', function(e){
-    // 输入框聚焦时不触发翻页
+    // 输入框聚焦时不触发翻页（避免打字时误翻页）
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    var idx = built.indexOf(current);
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    var idx = built.indexOf(current);                                // 当前页下标
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {           // 右/下方向键 → 下一页
       if (idx < built.length - 1) showPage(built[idx + 1], 'next');
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {       // 左/上方向键 → 上一页
       if (idx > 0) showPage(built[idx - 1], 'prev');
     }
   });
 
-  // ===== 修复 P5：触摸滑动手势 =====
-  var touchStartX = 0, touchStartY = 0, touchStartTime = 0;
-  var pageStack = document.getElementById('pageStack');
+  // ===== 修复 P5：触摸滑动手势（手机端左右滑动翻页）=====
+  var touchStartX = 0, touchStartY = 0, touchStartTime = 0;         // 记录触摸起点坐标和时间
+  var pageStack = document.getElementById('pageStack');              // 页面堆叠容器
   if (pageStack) {
+    // 触摸开始：记录起点
     pageStack.addEventListener('touchstart', function(e){
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartTime = Date.now();
+      touchStartX = e.touches[0].clientX;                            // 起点 X 坐标
+      touchStartY = e.touches[0].clientY;                            // 起点 Y 坐标
+      touchStartTime = Date.now();                                   // 起点时间戳
     }, { passive: true });
+    // 触摸结束：判断滑动方向和距离
     pageStack.addEventListener('touchend', function(e){
-      var dx = e.changedTouches[0].clientX - touchStartX;
-      var dy = e.changedTouches[0].clientY - touchStartY;
-      var dt = Date.now() - touchStartTime;
-      // 横向滑动 > 50px、大于纵向位移、且在 500ms 内，才触发翻页
+      var dx = e.changedTouches[0].clientX - touchStartX;            // 横向位移
+      var dy = e.changedTouches[0].clientY - touchStartY;            // 纵向位移
+      var dt = Date.now() - touchStartTime;                          // 滑动耗时
+      // 横向滑动 > 50px、且大于纵向位移、且在 500ms 内，才判定为翻页手势
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && dt < 500) {
         var idx = built.indexOf(current);
-        if (dx < 0 && idx < built.length - 1) {
+        if (dx < 0 && idx < built.length - 1) {                      // 向左滑 → 下一页
           showPage(built[idx + 1], 'next');
-        } else if (dx > 0 && idx > 0) {
+        } else if (dx > 0 && idx > 0) {                              // 向右滑 → 上一页
           showPage(built[idx - 1], 'prev');
         }
       }
     }, { passive: true });
   }
 
-  // 首次进入，播放技能条动画
+  // 首次进入页面时，播放技能进度条的动画（从 0 长到目标宽度）
   requestAnimationFrame(function(){
     document.querySelectorAll('#page-projects .fill, #page-skills .fill, #page-skillz .fill').forEach(function(f){
       f.style.width = f.getAttribute('data-w');
