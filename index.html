@@ -2274,17 +2274,21 @@ function toast(msg, duration) {
   // ★ Twikoo 云函数地址（Netlify 部署）；以后换域名了改这里即可
   var TWIKOO_ENV = 'https://euphonious-rolypoly-3be2c8.netlify.app/.netlify/functions/twikoo';
 
+  // 加载完 twikoo 库后，初始化留言板
   function boot(){
-    var box = document.getElementById('tcomment');
-    if (!box) return;
+    var box = document.getElementById('tcomment');                      // 留言板容器
+    if (!box) return;                                                    // 容器不存在就退出
+    // 如果还没配置云函数地址（仍是占位符），提示部署中
     if (TWIKOO_ENV.indexOf('REPLACE_WITH_') === 0) {
       box.innerHTML = '<p style="text-align:center;color:#888;padding:30px 0;">留言板正在部署中，部署完成后就可以留言啦～</p>';
       return;
     }
+    // twikoo 库没加载成功（网络问题等），提示失败
     if (!window.twikoo) {
       box.innerHTML = '<p style="text-align:center;color:#f85149;padding:30px 0;">留言组件加载失败，请检查网络后刷新页面。</p>';
       return;
     }
+    // 调用 twikoo 官方 init 方法渲染留言板
     twikoo.init({
       envId: TWIKOO_ENV,   // 云函数地址
       el: '#tcomment',     // 留言区容器
@@ -2293,14 +2297,15 @@ function toast(msg, duration) {
     });
   }
 
-  // 国内先用 npmmirror 加载，失败再换 jsdelivr
+  // 动态加载 JS 脚本；src：脚本地址；onFail：加载失败时的回调
   function loadScript(src, onFail){
-    var s = document.createElement('script');
-    s.src = src;
-    s.onload = boot;
-    s.onerror = onFail;
-    document.head.appendChild(s);
+    var s = document.createElement('script');                          // 创建 script 标签
+    s.src = src;                                                        // 设置脚本地址
+    s.onload = boot;                                                    // 加载成功 → 初始化留言板
+    s.onerror = onFail;                                                 // 加载失败 → 执行回调
+    document.head.appendChild(s);                                       // 插入到 <head> 中
   }
+  // 国内先用 npmmirror 镜像加载，失败再换 jsdelivr CDN
   loadScript('https://registry.npmmirror.com/twikoo/1.7.22/files/dist/twikoo.min.js', function(){
     loadScript('https://cdn.jsdelivr.net/npm/twikoo@1.7.22/dist/twikoo.min.js', boot);
   });
