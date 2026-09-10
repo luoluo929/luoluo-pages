@@ -876,13 +876,15 @@
   }
 
   /* ===== 游戏展开面板（贪吃蛇 iframe） ===== */
+  /* 贪吃蛇游戏展开面板，默认隐藏 */
   .game-panel {
     display: none;
     margin-top: 16px;
     padding: 18px;
     text-align: center;
   }
-  .game-panel.open { display: block; }
+  .game-panel.open { display: block; }          /* 加 open 类后显示 */
+  /* 贪吃蛇 iframe */
   .game-panel iframe {
     width: 100%;
     max-width: 480px;
@@ -890,8 +892,9 @@
     border: none;
     border-radius: 16px;
     box-shadow: 0 12px 32px rgba(31,62,98,0.15);
-    background: #f4f9ff;
+    background: #f4f9ff;                        /* iframe 加载前的浅蓝底 */
   }
+  /* "收起"按钮 */
   .game-panel-close {
     display: inline-block;
     margin-top: 12px;
@@ -906,10 +909,11 @@
     font-family: inherit;
   }
   .game-panel-close:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  /* "开始玩"按钮 */
   .game-card .play-btn {
     display: inline-block;
     margin-top: 12px;
-    background: linear-gradient(135deg, var(--accent), #5b9af5);
+    background: linear-gradient(135deg, var(--accent), #5b9af5); /* 蓝色渐变 */
     color: #fff;
     border: none;
     border-radius: 999px;
@@ -923,42 +927,42 @@
   }
   .game-card .play-btn:hover { transform: translateY(-1px); opacity: .9; }
 
-  /* ===== 响应式 ===== */
+  /* ===== 响应式：屏幕宽度 ≤ 960px 时（手机/平板）的布局调整 ===== */
   @media (max-width: 960px) {
-    .layout { flex-direction: column; }
+    .layout { flex-direction: column; }         /* 侧栏从左侧改为顶部 */
     .sidebar {
       width: 100%;
       height: auto;
-      position: static;
-      flex-direction: row;
+      position: static;                         /* 取消粘性定位 */
+      flex-direction: row;                      /* 内部横排 */
       align-items: center;
       flex-wrap: wrap;
       gap: 8px;
       padding: 14px 16px;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
+      border-right: none;                       /* 去掉右边框 */
+      border-bottom: 1px solid var(--border);   /* 加下边框 */
     }
-    .side-top { margin: 0; display: flex; align-items: center; gap: 10px; }
-    .side-avatar { width: 44px; height: 44px; margin: 0; }
+    .side-top { margin: 0; display: flex; align-items: center; gap: 10px; } /* 头像和昵称横排 */
+    .side-avatar { width: 44px; height: 44px; margin: 0; } /* 头像缩小 */
     .side-title { font-size: 16px; }
-    .side-sub { display: none; }
-    .flip-hint { display: none; }
-    .nav-list { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 6px; }
+    .side-sub { display: none; }                /* 隐藏副标题 */
+    .flip-hint { display: none; }               /* 隐藏翻页提示 */
+    .nav-list { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 6px; } /* 菜单横排可换行 */
     .nav-item { padding: 7px 12px; margin: 0; font-size: 13px; }
-    .nav-item .page-no { display: none; }
+    .nav-item .page-no { display: none; }       /* 隐藏页码标签 */
     .side-bottom { border-top: none; padding: 0; }
     .site-days { font-size: 11px; }
     .site-days .num { font-size: 16px; }
-    .main { padding: 28px 18px 40px; }
+    .main { padding: 28px 18px 40px; }          /* 主区域内边距缩小 */
     .page-stack { min-height: 50vh; }
     .proj-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .stat-cell { padding: 10px 8px; }
     .stat-cell .num { font-size: 18px; }
-    .skill-grid { grid-template-columns: 1fr; }
-    .game-grid { grid-template-columns: 1fr; }
-    .app-icon { width: 76px; height: 76px; font-size: 34px; border-radius: 50%; }
+    .skill-grid { grid-template-columns: 1fr; }     /* 技能卡片改单列 */
+    .game-grid { grid-template-columns: 1fr; }      /* 游戏卡片改单列 */
+    .app-icon { width: 76px; height: 76px; font-size: 34px; border-radius: 50%; } /* 网站图标缩小 */
     .app-grid { gap: 20px 10px; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
-    .social-grid { grid-template-columns: 1fr; }
+    .social-grid { grid-template-columns: 1fr; }    /* 社交卡片改单列 */
     .game-panel iframe { height: 500px; }
   }
   /* ===== 项目自定义系统 ===== */
