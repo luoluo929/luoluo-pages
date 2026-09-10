@@ -1800,11 +1800,21 @@ function toast(msg, duration) {
 // ===== 我的项目（可自定义：增删改查 + localStorage 持久化 + 自动时间戳）=====
 (function(){
   var KEY = 'luoluo_projects_v1';
+  var SCHEMA_VER_KEY = 'luoluo_projects_schema_v';
+  var SCHEMA_VER = 2;   // 升级到 v2：清除 v1 时代的默认示例项目残留
   var list = [];
   var editingId = null;
 
   function load(){
     try {
+      // 版本号检查：旧版本数据直接清空（避免默认示例项目残留）
+      var ver = parseInt(localStorage.getItem(SCHEMA_VER_KEY) || '0', 10);
+      if (ver < SCHEMA_VER) {
+        localStorage.removeItem(KEY);
+        localStorage.setItem(SCHEMA_VER_KEY, String(SCHEMA_VER));
+        list = []; save();
+        return;
+      }
       var raw = localStorage.getItem(KEY);
       if (raw) { list = JSON.parse(raw) || []; }
       else { list = []; save(); }
