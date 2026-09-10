@@ -1624,6 +1624,10 @@ function toast(msg, duration) {
     volSlider.addEventListener('input', function(){
       applyVolume(parseInt(volSlider.value, 10) / 100);
     });
+    // 松手时触发云端同步（change 在拖动结束时触发一次，避免狂推）
+    volSlider.addEventListener('change', function(){
+      if (window.debouncedPush) window.debouncedPush();
+    });
     // 点页面其他任意位置：自动收起面板
     document.addEventListener('click', function(e){
       if (!volPanel.contains(e.target) && e.target !== volBtn) {
@@ -1631,6 +1635,8 @@ function toast(msg, duration) {
       }
     });
   }
+  // 暴露 reload 给 Gist 同步调用
+  window.reloadMusicVolume = function(){ applyVolume(masterVolume); };
 })();
 
 // ===== 管理员更新日志（隐藏功能：2秒内连按左上角头像5次，或按 Ctrl+L 唤起）=====
@@ -1807,6 +1813,8 @@ function toast(msg, duration) {
 
   function save(){
     try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e) {}
+    // 触发云端同步（防抖）
+    if (window.debouncedPush) window.debouncedPush();
   }
 
   function genId(){ return 'p_' + Date.now() + '_' + Math.floor(Math.random()*1000); }
@@ -1978,6 +1986,8 @@ function toast(msg, duration) {
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape' && mask && mask.style.display === 'flex') closeModal();
   });
+  // 暴露 reload 给 Gist 同步调用
+  window.reloadProjects = function(){ load(); render(); };
 })();
 
 // ===== 旧留言板（localStorage 本地版，已停用：留言只存在各自浏览器里、无法互通，整段保留备查）=====
@@ -2229,30 +2239,100 @@ function toast(msg, duration) {
   var GIST_RAW_URL = 'https://gist.githubusercontent.com/' + GIST_CONFIG.owner + '/' + GIST_CONFIG.id + '/raw/' + GIST_CONFIG.filename;
   var GIST_API_URL = 'https://api.github.com/gists/' + GIST_CONFIG.id;
 
-  // —— 从 Gist 拉取进度（无需 token）——
+  // —— 从 Gist 拉取（无需 token），返回统一数据包 ——
   function fetchFromGist(){
     return fetch(GIST_RAW_URL + '?t=' + Date.now())
       .then(function(r){ return r.ok ? r.text() : null; })
       .then(function(txt){
         if (!txt) return null;
-        try { return JSON.parse(txt); } catch(e) { return null; }
+        try { return migrate(JSON.parse(txt)); } catch(e) { return null; }
       });
   }
-  // —— 推送到 Gist（需要 token，从 localStorage 读）——
+  // —— 旧格式迁移：把扁平的 skills-only 数据包成 v2 bundle ——
+  function migrate(c){
+    if (!c || typeof c !== 'object') return null;
+    if (c.v === 2) return c;
+    var skills = {};
+    SKILLS.forEach(function(sk){ if (c[sk.id] != null) skills[sk.id] = c[sk.id]; });
+    return { v:2, skills:skills, projects:null, music_volume:null, updated:c.updated||null };
+  }
+  // —— 打包本地所有需要同步的数据 ——
+  var SYNC_KEYS = { skills:'luoluo_skills_v1', projects:'luoluo_projects_v1', music_volume:'luoluo_music_volume' };
+  function packBundle(){
+    var b = { v:2, updated:new Date().toISOString() };
+    var sk = {};
+    SKILLS.forEach(function(s){ sk[s.id] = s.progress; });
+    b.skills = sk;
+    try { var p = localStorage.getItem(SYNC_KEYS.projects); b.projects = p ? JSON.parse(p) : []; } catch(e){ b.projects = []; }
+    var mv = localStorage.getItem(SYNC_KEYS.music_volume);
+    b.music_volume = (mv != null && !isNaN(parseFloat(mv))) ? parseFloat(mv) : null;
+    return b;
+  }
+  // —— 应用 bundle 到本地 localStorage，返回变更的字段列表 ——
+  function applyBundle(b){
+    if (!b || b.v !== 2) return [];
+    var changed = [];
+    if (b.skills && typeof b.skills === 'object') {
+      if (applyProgressData(b.skills)) changed.push('skills');
+    }
+    if (Array.isArray(b.projects)) {
+      try {
+        var oldP = localStorage.getItem(SYNC_KEYS.projects);
+        if (oldP !== JSON.stringify(b.projects)) {
+          localStorage.setItem(SYNC_KEYS.projects, JSON.stringify(b.projects));
+          changed.push('projects');
+        }
+      } catch(e) {}
+    }
+    if (b.music_volume != null && !isNaN(b.music_volume)) {
+      var oldV = localStorage.getItem(SYNC_KEYS.music_volume);
+      if (oldV !== String(b.music_volume)) {
+        localStorage.setItem(SYNC_KEYS.music_volume, b.music_volume);
+        changed.push('music_volume');
+      }
+    }
+    return changed;
+  }
+  // —— 触发各模块 reload ——
+  function reloadModules(changed){
+    if (!changed || !changed.length) return;
+    if (changed.indexOf('skills') >= 0 && typeof updateSkillCards === 'function') updateSkillCards();
+    if (changed.indexOf('projects') >= 0 && window.reloadProjects) window.reloadProjects();
+    if (changed.indexOf('music_volume') >= 0 && window.reloadMusicVolume) window.reloadMusicVolume();
+  }
+  // —— 推送到 Gist（打包所有数据，需 token）——
   function pushToGist(){
     var token = localStorage.getItem('gh_token');
     if (!token) return Promise.reject(new Error('no token'));
-    var obj = {};
-    SKILLS.forEach(function(sk){ obj[sk.id] = sk.progress; });
-    obj.updated = new Date().toISOString();
     var body = { files: {} };
-    body.files[GIST_CONFIG.filename] = { content: JSON.stringify(obj) };
+    body.files[GIST_CONFIG.filename] = { content: JSON.stringify(packBundle()) };
     return fetch(GIST_API_URL, {
       method: 'PATCH',
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' },
       body: JSON.stringify(body)
     }).then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); });
   }
+  // —— 防抖推送：本地有改动后 1.5 秒内合并推送，避免连续操作刷屏 ——
+  var localDirty = false;
+  var pushTimer = null;
+  function debouncedPush(){
+    localDirty = true;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function(){
+      pushToGist().then(function(){
+        localDirty = false;
+        showSyncStatus('✅ 已同步到云端', 2000);
+      }).catch(function(err){
+        if (err && err.message === 'no token') {
+          showSyncStatus('💾 已保存（未登录 token，不同步云端）', 2500);
+          localDirty = false;
+        } else {
+          showSyncStatus('⚠️ 保存成功但云端同步失败', 2500);
+        }
+      });
+    }, 1500);
+  }
+  window.debouncedPush = debouncedPush;
 
   /* ============================================================
      网站数据配置区
@@ -2322,14 +2402,15 @@ function toast(msg, duration) {
       var raw = localStorage.getItem(SKILLS_KEY);
       if (raw) applyProgressData(JSON.parse(raw));
     } catch(e) {}
-    // 异步从 Gist 拉取覆盖（云端为准）
-    fetchFromGist().then(function(cloud){
-      if (applyProgressData(cloud)) {
-        // 云端数据和本地不同，刷新 UI
-        if (typeof updateSkillCards === 'function') updateSkillCards();
+    // 异步从 Gist 拉取覆盖（云端为准，分发到所有模块）
+    fetchFromGist().then(function(bundle){
+      if (localDirty) return;   // 本地有未推送改动，跳过避免覆盖正在编辑的内容
+      var changed = applyBundle(bundle);
+      if (changed && changed.length) {
+        reloadModules(changed);
+        // skills 保存到 localStorage
+        saveSkillProgress(true);
       }
-      // 保存最新到 localStorage
-      saveSkillProgress(true);
     }).catch(function(){});
   }
   function saveSkillProgress(skipGist){
@@ -2339,15 +2420,7 @@ function toast(msg, duration) {
       localStorage.setItem(SKILLS_KEY, JSON.stringify(obj));
     } catch(e) {}
     if (!skipGist) {
-      pushToGist().then(function(){
-        showSyncStatus('✅ 已同步到云端', 2000);
-      }).catch(function(err){
-        if (err && err.message === 'no token') {
-          showSyncStatus('💾 已保存（未登录 token，不同步云端）', 2500);
-        } else {
-          showSyncStatus('⚠️ 保存成功但云端同步失败', 2500);
-        }
-      });
+      debouncedPush();   // 走统一防抖推送
     }
   }
   // —— 同步状态提示 ——
@@ -2364,16 +2437,16 @@ function toast(msg, duration) {
     clearTimeout(tip._t);
     tip._t = setTimeout(function(){ tip.style.opacity = '0'; }, duration || 2000);
   }
-  // —— 每 30 秒轮询 Gist 检查远端更新 ——
+  // —— 每 30 秒轮询 Gist 检查远端更新（全模块）——
   setInterval(function(){
-    if (document.getElementById('skillGrid')) {
-      fetchFromGist().then(function(cloud){
-        if (applyProgressData(cloud)) {
-          if (typeof updateSkillCards === 'function') updateSkillCards();
-          showSyncStatus('☁️ 云端进度已更新', 1500);
-        }
-      }).catch(function(){});
-    }
+    fetchFromGist().then(function(bundle){
+      if (localDirty) return;   // 本地有未推送改动，跳过
+      var changed = applyBundle(bundle);
+      if (changed && changed.length) {
+        reloadModules(changed);
+        showSyncStatus('☁️ 云端数据已更新', 1500);
+      }
+    }).catch(function(){});
   }, GIST_CONFIG.pollInterval);
 
   // —— 渲染技能卡片（含可拖动滑块 + 管理员权限门）——
