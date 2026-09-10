@@ -733,17 +733,19 @@
   }
 
   /* ===== 社交媒体页（新增，修复 P6） ===== */
+  /* 社交卡片网格：自适应列数，每列最小 220px */
   .social-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
   }
+  /* 单个社交卡片：图标 + 文字横排 */
   .social-card {
     display: flex;
     align-items: center;
     gap: 14px;
     padding: 18px 20px;
-    text-decoration: none;
+    text-decoration: none;                    /* 去掉 <a> 下划线 */
     color: var(--text);
     transition: transform .2s, box-shadow .2s;
   }
@@ -751,6 +753,7 @@
     transform: translateY(-3px);
     box-shadow: 0 16px 40px rgba(31,62,98,0.15);
   }
+  /* 社交平台图标 */
   .social-icon {
     width: 48px; height: 48px;
     border-radius: 14px;
@@ -759,7 +762,7 @@
     justify-content: center;
     font-size: 22px;
     color: #fff;
-    flex-shrink: 0;
+    flex-shrink: 0;                          /* 不被压缩 */
     overflow: hidden;          /* 图片图标：让照片裁进圆角方块里，不溢出 */
   }
   .social-icon img {           /* 图片图标样式：铺满整个图标位，不变形 */
@@ -767,8 +770,9 @@
     object-fit: cover;
     display: block;
   }
-  .social-info .s-name { font-size: 15px; font-weight: 700; }
-  .social-info .s-handle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .social-info .s-name { font-size: 15px; font-weight: 700; }         /* 平台名称 */
+  .social-info .s-handle { font-size: 12px; color: var(--muted); margin-top: 2px; } /* 用户名/handle */
+  /* 社交页底部提示 */
   .social-tip {
     margin-top: 24px;
     padding: 18px 22px;
@@ -779,16 +783,18 @@
   .social-tip b { color: var(--accent); }
 
   /* ===== 底部 ===== */
+  /* 页面底部的模型说明文字 */
   .model-note {
     margin-top: 26px;
     font-size: 12px;
     color: var(--muted);
     text-align: center;
-    border-top: 1px dashed var(--border);
+    border-top: 1px dashed var(--border);    /* 顶部虚线上边框 */
     padding-top: 16px;
   }
 
   /* ===== 右上角悬浮音乐播放器（单曲循环） ===== */
+  /* 播放器容器：固定在右上角 */
   .music-float {
     position: fixed;
     top: 40px;
@@ -798,6 +804,7 @@
     gap: 10px;
     align-items: center;
   }
+  /* 播放/暂停圆形按钮 */
   .music-toggle {
     width: 46px; height: 46px;
     border-radius: 50%;
@@ -812,8 +819,8 @@
     align-items: center;
     justify-content: center;
   }
-  .music-toggle:hover { transform: translateY(-3px); background: var(--accent-soft); }
-  .music-toggle.playing { background: var(--accent); color: #fff; }
+  .music-toggle:hover { transform: translateY(-3px); background: var(--accent-soft); } /* 悬停：上浮+浅蓝底 */
+  .music-toggle.playing { background: var(--accent); color: #fff; } /* 播放中：蓝底白字 */
 
   /* 音量滑块弹出面板 */
   .music-vol-panel {
@@ -828,7 +835,7 @@
     display: none;         /* 默认隐藏，加上 show 类才显示 */
     align-items: center;
   }
-  .music-vol-panel.show { display: flex; }
+  .music-vol-panel.show { display: flex; }          /* 加 show 类后显示为 flex */
   .music-vol-panel input[type="range"] {
     width: 120px;
     cursor: pointer;
@@ -836,18 +843,20 @@
   }
 
   /* ===== Toast 提示（修复 P10，替代 alert） ===== */
+  /* Toast 容器：固定在页面底部居中，纵向排列多条提示 */
   .toast-container {
     position: fixed;
     bottom: 32px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%);                 /* 水平居中 */
     z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    pointer-events: none;
+    pointer-events: none;                       /* 不拦截鼠标点击 */
   }
+  /* 单条 Toast 提示 */
   .toast {
     background: var(--toast-bg);
     color: #fff;
@@ -855,10 +864,10 @@
     padding: 10px 22px;
     border-radius: 999px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity .3s ease, transform .3s ease;
-    max-width: 80vw;
+    opacity: 0;                                 /* 初始透明 */
+    transform: translateY(12px);                /* 初始下移 12px */
+    transition: opacity .3s ease, transform .3s ease; /* 淡入+上移动画 */
+    max-width: 80vw;                            /* 最大宽度 80% 视口 */
     text-align: center;
   }
   .toast.show {
