@@ -57,71 +57,77 @@
   }
 
   /* ===== 左侧导航栏 ===== */
+  /* .sidebar：左侧固定导航区，包含头像、菜单、运行天数 */
   .sidebar {
-    width: 252px;
-    flex-shrink: 0;
-    background: rgba(255,255,255,0.5);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-right: 1px solid var(--border);
-    padding: 36px 22px 24px;
-    display: flex;
+    width: 252px;                         /* 固定宽度 252px */
+    flex-shrink: 0;                       /* 不被压缩（保持 252px） */
+    background: rgba(255,255,255,0.5);    /* 半透明白底 */
+    backdrop-filter: blur(18px);          /* 更强的毛玻璃模糊 */
+    -webkit-backdrop-filter: blur(18px);  /* Safari 兼容 */
+    border-right: 1px solid var(--border);/* 右侧分隔线 */
+    padding: 36px 22px 24px;              /* 内边距：上36 左右22 下24 */
+    display: flex;                        /* 内部纵向排列 */
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    position: sticky;                     /* 粘性定位：滚动时固定在顶部 */
+    top: 0;                               /* 吸顶距离 0 */
+    height: 100vh;                        /* 高度等于一屏 */
   }
-  .side-top { text-align:center; margin-bottom: 22px; }
+  .side-top { text-align:center; margin-bottom: 22px; } /* 头像+昵称区，居中 */
+  /* 头像图片：圆形、带白边和阴影 */
   .side-avatar {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid rgba(255,255,255,0.9);
-    box-shadow: var(--shadow);
+    width: 88px; height: 88px;            /* 宽高 88px */
+    border-radius: 50%;                   /* 50% = 正圆 */
+    object-fit: cover;                    /* 图片填满并裁剪，不变形 */
+    border: 3px solid rgba(255,255,255,0.9); /* 白色描边 */
+    box-shadow: var(--shadow);            /* 投影 */
     display:block;
-    margin: 0 auto 12px;
-    background: var(--accent-soft);
+    margin: 0 auto 12px;                  /* 水平居中，下方留 12px */
+    background: var(--accent-soft);       /* 图片加载前的占位背景 */
   }
-  .side-title { font-size: 19px; font-weight: 700; letter-spacing: 0.5px; }
-  .side-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .side-title { font-size: 19px; font-weight: 700; letter-spacing: 0.5px; } /* 昵称：大字加粗 */
+  .side-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }     /* 副标题：小字灰色 */
 
+  /* "滑动翻页"提示条：胶囊形 */
   .flip-hint {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 8px;                             /* 箭头和文字间距 */
     font-size: 12px;
     color: var(--muted);
     background: var(--accent-soft);
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 999px;                 /* 999px = 胶囊形 */
     padding: 5px 12px;
     margin: 0 auto 24px;
-    width: fit-content;
+    width: fit-content;                   /* 宽度自适应内容 */
   }
-  .flip-hint .arrow { font-size: 11px; }
+  .flip-hint .arrow { font-size: 11px; }  /* 左右箭头稍小 */
 
-  .nav-list { list-style:none; flex:1; }
+  .nav-list { list-style:none; flex:1; }  /* 菜单列表：去掉默认圆点，占满剩余高度 */
+  /* 单个菜单项 */
   .nav-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between;       /* 文字左、页码右 */
     padding: 11px 16px;
     margin-bottom: 4px;
     border-radius: 12px;
-    color: var(--muted);
+    color: var(--muted);                  /* 默认灰色文字 */
     font-size: 15px;
-    cursor: pointer;
-    transition: all .2s ease;
-    user-select: none;
+    cursor: pointer;                      /* 鼠标变手型 */
+    transition: all .2s ease;             /* 所有属性 0.2 秒过渡 */
+    user-select: none;                    /* 禁止选中文字 */
   }
-  .nav-item:hover { background: var(--accent-soft); color: var(--text); }
+  .nav-item:hover { background: var(--accent-soft); color: var(--text); } /* 悬停：浅蓝底+深色字 */
+  /* 激活状态（当前页）：蓝底白字 */
   .nav-item.active {
     background: var(--accent);
     color: #fff;
     font-weight: 600;
-    box-shadow: 0 4px 14px rgba(37,99,192,0.28);
+    box-shadow: 0 4px 14px rgba(37,99,192,0.28); /* 蓝色光晕 */
   }
+  /* 菜单项右侧的页码小标签 */
   .nav-item .page-no {
     font-size: 11px;
     opacity: 0.7;
@@ -129,7 +135,7 @@
     border-radius: 99px;
     padding: 1px 8px;
   }
-  .nav-item.active .page-no { background: rgba(255,255,255,0.22); }
+  .nav-item.active .page-no { background: rgba(255,255,255,0.22); } /* 激活时页码背景变白半透明 */
 
   .side-bottom {
     border-top: 1px solid var(--border);
