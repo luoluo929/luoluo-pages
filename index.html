@@ -1777,13 +1777,6 @@ function toast(msg, duration) {
       toast('✅ Token 已保存，云端同步已启用');
     }
   }
-  // 快捷键 Ctrl+Shift+S 打开 Token 设置（Ctrl+T 被浏览器占用）
-  document.addEventListener('keydown', function(e){
-    if (e.ctrlKey && e.shiftKey && (e.key === 'S' || e.key === 's')) {
-      e.preventDefault();
-      openTokenSetup();
-    }
-  });
 
   /* ----- 事件绑定 ----- */
   document.getElementById('adminPassOk').addEventListener('click', checkPassword);
