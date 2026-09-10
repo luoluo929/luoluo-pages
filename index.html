@@ -1043,6 +1043,33 @@
     40%, 80% { transform: translateX(8px); }
   }
   .shake { animation: shake 0.4s; }
+
+  /* ===== 背景粒子层 ===== */
+  #particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;   /* 不拦截点击 */
+    z-index: 0;             /* 在背景上、内容下 */
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    bottom: -10px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255,255,255,0.6);
+    animation: particleFloat linear infinite;
+  }
+  @keyframes particleFloat {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
+  }
+  /* 让 .layout 浮在粒子之上 */
+  .layout { position: relative; z-index: 1; }
+
   @media (max-width: 600px) {
     .proj-card-actions { opacity: 1; }
     .proj-modal { max-width: 100%; }
