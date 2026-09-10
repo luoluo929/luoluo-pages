@@ -1339,25 +1339,26 @@
 
 <script>
 // ===== 通用工具：Toast（修复 P10，替代 alert）=====
+// msg：提示文字；duration：显示时长（毫秒，默认 2200）
 function toast(msg, duration) {
-  var container = document.getElementById('toastContainer');
-  if (!container) return;
-  var el = document.createElement('div');
-  el.className = 'toast';
-  el.textContent = msg;
-  container.appendChild(el);
-  requestAnimationFrame(function(){ el.classList.add('show'); });
-  var dur = duration || 2200;
+  var container = document.getElementById('toastContainer');   // 获取页面底部的 toast 容器
+  if (!container) return;                                       // 容器不存在就直接返回，避免报错
+  var el = document.createElement('div');                       // 创建一个新的 toast 元素
+  el.className = 'toast';                                       // 套用 .toast 样式
+  el.textContent = msg;                                         // 设置提示文字
+  container.appendChild(el);                                    // 把 toast 加到容器里（此时还是透明的）
+  requestAnimationFrame(function(){ el.classList.add('show'); }); // 下一帧再加上 show 类，触发淡入动画
+  var dur = duration || 2200;                                   // 没传时长就用默认 2.2 秒
   setTimeout(function(){
-    el.classList.remove('show');
-    setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+    el.classList.remove('show');                                // 到时移除 show，触发淡出动画
+    setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300); // 淡出结束后从 DOM 移除
   }, dur);
 }
 
-// ===== 年份 =====
+// ===== 年份：把所有带 data-year 属性的元素替换成当前年份 =====
 (function(){
-  var yearEls = document.querySelectorAll('[data-year]');
-  yearEls.forEach(function(el){ el.textContent = new Date().getFullYear(); });
+  var yearEls = document.querySelectorAll('[data-year]');      // 选中所有 data-year 元素
+  yearEls.forEach(function(el){ el.textContent = new Date().getFullYear(); }); // 逐个填入今年年份
 })();
 
 // ===== 建站天数（侧边栏底部，替代原音乐按钮）=====
