@@ -2652,18 +2652,18 @@ function toast(msg, duration) {
     };
   }
 
-  // —— 渲染手机 App 图标 ——
-  var appGrid = document.getElementById('appGrid');
+  // —— 渲染"有趣的网站"图标（数据驱动，根据 SITES 数组生成）——
+  var appGrid = document.getElementById('appGrid');                            // 网站图标网格容器
   if (appGrid) {
-    SITES.forEach(function(s){
-      var a = document.createElement('a');
+    SITES.forEach(function(s){                                                 // 遍历每个网站配置
+      var a = document.createElement('a');                                      // 用 <a> 标签做卡片，点击跳转
       a.className = 'app-card';
-      a.href = s.url;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      var icon = document.createElement('div');
+      a.href = s.url;                                                           // 跳转地址
+      a.target = '_blank';                                                      // 新标签页打开
+      a.rel = 'noopener';                                                       // 安全属性，防止新页面操作原页面
+      var icon = document.createElement('div');                                 // 图标容器
       icon.className = 'app-icon';
-      icon.style.background = 'linear-gradient(135deg, ' + s.color + ', ' + lighten(s.color) + ')';
+      icon.style.background = 'linear-gradient(135deg, ' + s.color + ', ' + lighten(s.color) + ')'; // 渐变色底色
       if (s.img) {
         // —— 图片图标：配置了 img 字段就显示照片（照片会盖住渐变底色）——
         var iconImg = document.createElement('img');
@@ -2679,14 +2679,14 @@ function toast(msg, duration) {
         // —— 文字/emoji 图标（原来的方式）——
         icon.textContent = s.icon;
       }
-      var nm = document.createElement('div');
+      var nm = document.createElement('div');                                   // 网站名称
       nm.className = 'app-name';
       nm.textContent = s.name;
-      a.appendChild(icon); a.appendChild(nm);
+      a.appendChild(icon); a.appendChild(nm);                                   // 组装卡片
       appGrid.appendChild(a);
     });
 
-    // 添加占位卡片
+    // 添加"添加"占位卡片（点击提示去改 SITES 数组）
     var add = document.createElement('div');
     add.className = 'app-add';
     var addIcon = document.createElement('div');
@@ -2702,62 +2702,64 @@ function toast(msg, duration) {
     appGrid.appendChild(add);
   }
 
-  // —— 渲染游戏卡片 ——
-  var gameGrid = document.getElementById('gameGrid');
-  var snakePanel = document.getElementById('snakePanel');
-  var snakeFrame = document.getElementById('snakeFrame');
-  var snakeClose = document.getElementById('snakeClose');
-  var snakeLoaded = false;
+  // —— 渲染游戏卡片 + 贪吃蛇 iframe 展开/收起 ——
+  var gameGrid = document.getElementById('gameGrid');                           // 游戏卡片网格
+  var snakePanel = document.getElementById('snakePanel');                       // 贪吃蛇展开面板
+  var snakeFrame = document.getElementById('snakeFrame');                       // 贪吃蛇 iframe
+  var snakeClose = document.getElementById('snakeClose');                       // 收起按钮
+  var snakeLoaded = false;                                                      // 贪吃蛇是否已加载（懒加载）
 
+  // 展开贪吃蛇游戏
   function openSnake(){
     if (!snakePanel) return;
-    snakePanel.classList.add('open');
-    if (!snakeLoaded && snakeFrame) {
+    snakePanel.classList.add('open');                                           // 显示面板
+    if (!snakeLoaded && snakeFrame) {                                           // 第一次展开才加载 iframe
       snakeFrame.src = 'snake.html';
       snakeLoaded = true;
     }
     // 滚动到游戏面板
     setTimeout(function(){ snakePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 100);
   }
+  // 收起贪吃蛇游戏
   function closeSnake(){
     if (!snakePanel) return;
-    snakePanel.classList.remove('open');
-    // 收起时暂停游戏（通过 reload iframe 实现）
+    snakePanel.classList.remove('open');                                        // 隐藏面板
+    // 收起时暂停游戏（通过把 iframe 地址设为 about:blank 实现）
     if (snakeFrame && snakeLoaded) {
       snakeFrame.src = 'about:blank';
       snakeLoaded = false;
     }
   }
-  if (snakeClose) snakeClose.addEventListener('click', closeSnake);
+  if (snakeClose) snakeClose.addEventListener('click', closeSnake);             // 点收起按钮关闭
 
   if (gameGrid) {
-    GAMES.forEach(function(g){
+    GAMES.forEach(function(g){                                                  // 遍历每个游戏配置
       var card = document.createElement('div');
       card.className = 'game-card glass-card';
-      var icon = document.createElement('div');
+      var icon = document.createElement('div');                                 // 游戏图标（emoji）
       icon.className = 'game-icon';
       icon.textContent = g.icon;
-      var nm = document.createElement('div');
+      var nm = document.createElement('div');                                   // 游戏名称
       nm.className = 'g-name';
       nm.textContent = g.name;
-      var desc = document.createElement('p');
+      var desc = document.createElement('p');                                   // 游戏描述
       desc.className = 'g-desc';
       desc.textContent = g.desc;
-      var st = document.createElement('span');
+      var st = document.createElement('span');                                  // 状态标签（已上线/制作中/规划中）
       st.className = 'game-status ' + g.cls;
       st.textContent = g.status;
       card.appendChild(icon); card.appendChild(nm); card.appendChild(desc); card.appendChild(st);
-      // 可玩游戏加"开始玩"按钮
+      // 可玩的游戏（playable: true）加"开始玩"按钮
       if (g.playable) {
         var playBtn = document.createElement('button');
         playBtn.className = 'play-btn';
         playBtn.textContent = '▶ 开始玩';
         playBtn.addEventListener('click', function(e){
-          e.stopPropagation();
-          if (snakePanel && snakePanel.classList.contains('open')) {
+          e.stopPropagation();                                                  // 阻止冒泡，避免触发卡片其他事件
+          if (snakePanel && snakePanel.classList.contains('open')) {            // 已展开 → 收起
             closeSnake();
             playBtn.textContent = '▶ 开始玩';
-          } else {
+          } else {                                                              // 未展开 → 展开
             openSnake();
             playBtn.textContent = '▼ 收起';
           }
@@ -2768,20 +2770,20 @@ function toast(msg, duration) {
     });
   }
 
-  // —— 渲染社交媒体卡片（新增）——
-  var socialGrid = document.getElementById('socialGrid');
+  // —— 渲染社交媒体卡片（根据 SOCIALS 数组生成）——
+  var socialGrid = document.getElementById('socialGrid');                       // 社交卡片网格
   if (socialGrid) {
-    SOCIALS.forEach(function(s){
-      var a = document.createElement('a');
+    SOCIALS.forEach(function(s){                                                // 遍历每个社交平台
+      var a = document.createElement('a');                                      // 用 <a> 做卡片
       a.className = 'social-card glass-card';
       a.href = s.url;
-      if (s.url !== '#') {
+      if (s.url !== '#') {                                                      // 有真实链接 → 新标签页打开
         a.target = '_blank';
         a.rel = 'noopener';
-      } else {
+      } else {                                                                  // url 是 '#' → 未接入，点击提示
         a.addEventListener('click', function(e){ e.preventDefault(); toast('该平台待接入，敬请期待'); });
       }
-      var icon = document.createElement('div');
+      var icon = document.createElement('div');                                 // 平台图标
       icon.className = 'social-icon';
       if (s.img) {
         // —— 图片图标：配置了 img 字段就显示照片 ——
@@ -2800,7 +2802,7 @@ function toast(msg, duration) {
         icon.style.background = 'linear-gradient(135deg, ' + s.color + ', ' + lighten(s.color) + ')';
         icon.textContent = s.icon;
       }
-      var info = document.createElement('div');
+      var info = document.createElement('div');                                 // 名称 + handle 信息
       info.className = 'social-info';
       var nm = document.createElement('div');
       nm.className = 's-name';
@@ -2809,39 +2811,39 @@ function toast(msg, duration) {
       handle.className = 's-handle';
       handle.textContent = s.handle;
       info.appendChild(nm); info.appendChild(handle);
-      a.appendChild(icon); a.appendChild(info);
+      a.appendChild(icon); a.appendChild(info);                                 // 组装卡片
       socialGrid.appendChild(a);
     });
 
-        // 生成背景粒子
+        // 生成背景粒子：创建 11 个随机大小、随机位置、随机速度的粒子
         const particlesEl = document.getElementById('particles');
         for (let i = 0; i < 11; i++) {
             const p = document.createElement('div');
             p.className = 'particle';
-            p.style.left = Math.random() * 100 + '%';
-            p.style.animationDuration = (Math.random() * 8 + 5) + 's';
-            p.style.animationDelay = (Math.random() * 3) + 's';
-            p.style.width = p.style.height = (Math.random() * 3 + 3) + 'px';
+            p.style.left = Math.random() * 100 + '%';                           // 随机水平位置（0~100%）
+            p.style.animationDuration = (Math.random() * 8 + 5) + 's';          // 随机动画时长（5~13 秒）
+            p.style.animationDelay = (Math.random() * 3) + 's';                 // 随机延迟（0~3 秒）
+            p.style.width = p.style.height = (Math.random() * 3 + 3) + 'px';    // 随机大小（3~6 像素）
             particlesEl.appendChild(p);
         }
 
-        // ===== 实时时间显示 =====
+        // ===== 实时时间显示：右上角时钟，每秒更新 =====
         function updateTime() {
-          const now = new Date();
-          const pad = (n) => n.toString().padStart(2, '0');
-          const hh = pad(now.getHours());
-          const mm = pad(now.getMinutes());
-          const ss = pad(now.getSeconds());
-          const y = now.getFullYear();
-          const mo = pad(now.getMonth() + 1);
-          const d = pad(now.getDate());
-          const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-          const w = weekDays[now.getDay()];
-          document.getElementById('liveTime').textContent = `${hh}:${mm}:${ss}`;
-          document.getElementById('liveDate').textContent = `${y}年${mo}月${d}日 星期${w}`;
+          const now = new Date();                                               // 当前时间
+          const pad = (n) => n.toString().padStart(2, '0');                     // 补零工具：9 → "09"
+          const hh = pad(now.getHours());                                       // 时
+          const mm = pad(now.getMinutes());                                     // 分
+          const ss = pad(now.getSeconds());                                     // 秒
+          const y = now.getFullYear();                                          // 年
+          const mo = pad(now.getMonth() + 1);                                   // 月（月份从 0 开始所以 +1）
+          const d = pad(now.getDate());                                         // 日
+          const weekDays = ['日', '一', '二', '三', '四', '五', '六'];          // 星期中文映射
+          const w = weekDays[now.getDay()];                                     // getDay() 返回 0~6，0=周日
+          document.getElementById('liveTime').textContent = `${hh}:${mm}:${ss}`;          // 更新时间显示
+          document.getElementById('liveDate').textContent = `${y}年${mo}月${d}日 星期${w}`; // 更新日期显示
         }
-        updateTime();
-        setInterval(updateTime, 1000);
+        updateTime();                                                           // 页面加载时立即执行一次
+        setInterval(updateTime, 1000);                                          // 之后每秒更新一次
 
   }
 })();
