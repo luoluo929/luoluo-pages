@@ -137,8 +137,9 @@
   }
   .nav-item.active .page-no { background: rgba(255,255,255,0.22); } /* 激活时页码背景变白半透明 */
 
+  /* 侧栏底部：运行天数 */
   .side-bottom {
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border);  /* 顶部分隔线 */
     padding-top: 0px;
     text-align: center;
   }
@@ -150,21 +151,22 @@
   .site-days .num {
     font-size: 20px;
     font-weight: 800;
-    color: var(--accent);
+    color: var(--accent);                /* 天数数字用主题蓝色强调 */
   }
+  /* 实时时间显示：绝对定位在主内容区右上角 */
   .live-time {
-    position: absolute;
-    top: 40px;
-    right: 500px;
+    position: absolute;                   /* 相对于 .main 定位 */
+    top: 40px;                            /* 距顶 40px */
+    right: 500px;                         /* 距右 500px（可改） */
     text-align: center;
-    font-family: 'Consolas', 'Monaco', monospace;
-    z-index: 5;
+    font-family: 'Consolas', 'Monaco', monospace; /* 等宽字体，数字对齐好看 */
+    z-index: 5;                           /* 浮在内容之上 */
   }
   .live-time .time {
-    font-size: 60px;
+    font-size: 60px;                      /* 时间大字 */
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: 2px;
+    letter-spacing: 2px;                  /* 字间距 */
   }
   .live-time .date {
     font-size: 20px;
@@ -173,47 +175,52 @@
   }
 
   /* ===== 右侧内容区 ===== */
+  /* .main：右侧主内容容器，flex:1 占满剩余宽度 */
   .main {
-    flex: 1;
-    padding: 44px 48px 52px;
-    position: relative;
-    overflow: hidden;
+    flex: 1;                              /* 占满侧栏之外的所有宽度 */
+    padding: 44px 48px 52px;              /* 内边距：上44 左右48 下52 */
+    position: relative;                   /* 作为 .live-time 绝对定位的参照 */
+    overflow: hidden;                     /* 裁掉页面切换时滑出的内容 */
   }
   /* 修复 P9：用 grid 叠加替代 absolute，高度自动取最高页 */
+  /* .page-stack：所有页面叠在同一网格区域，只显示 active 的那个 */
   .page-stack {
     display: grid;
-    grid-template-areas: "stack";
-    min-height: 60vh;
+    grid-template-areas: "stack";         /* 所有 .page 都占 "stack" 区域（重叠） */
+    min-height: 60vh;                     /* 至少 60% 视口高 */
   }
+  /* 单个页面：默认透明、隐藏、右移 60px（等待滑入） */
   .page {
     grid-area: stack;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(60px);
-    transition: opacity .45s ease, transform .45s ease, visibility .45s;
-    pointer-events: none;
+    opacity: 0;                           /* 透明 */
+    visibility: hidden;                   /* 不可交互 */
+    transform: translateX(60px);          /* 向右偏移 60px */
+    transition: opacity .45s ease, transform .45s ease, visibility .45s; /* 0.45 秒过渡动画 */
+    pointer-events: none;                 /* 不接收鼠标事件 */
   }
+  /* 激活页面：显示、归位、可交互 */
   .page.active {
     opacity: 1;
     visibility: visible;
     transform: translateX(0);
     pointer-events: auto;
   }
-  .page.in-left { transform: translateX(-60px); }
+  .page.in-left { transform: translateX(-60px); } /* 向左切页时旧页往左滑出 */
 
+  /* 页面头部：标签 + 标题 + 描述 */
   .page-header { margin-bottom: 32px; }
   .page-header .tag {
-    display: inline-block;
+    display: inline-block;                /* 行内块，方便设圆角和内边距 */
     font-size: 12px;
     color: var(--accent);
     background: var(--accent-soft);
     border: 1px solid var(--border);
     padding: 3px 12px;
-    border-radius: 999px;
+    border-radius: 999px;                 /* 胶囊形 */
     margin-bottom: 10px;
   }
-  .page-header h2 { font-size: 28px; font-weight: 800; letter-spacing: 0.5px; }
-  .page-header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .page-header h2 { font-size: 28px; font-weight: 800; letter-spacing: 0.5px; } /* 页面大标题 */
+  .page-header p { color: var(--muted); font-size: 14px; margin-top: 6px; }       /* 页面描述 */
 
   /* ===== 项目卡片 ===== */
   .proj-card {
