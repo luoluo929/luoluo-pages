@@ -2478,29 +2478,32 @@ function toast(msg, duration) {
     { name: 'QQ', handle: '.', icon: 'QQ', color: '#12b7f5', url: 'https://qm.qq.com/q/dSC4LUjJ0A', img: 'assets/qq.jpg' }
   ];
 
+  // 颜色变亮工具：把十六进制颜色的 R/G/B 各加 90（不超过 255），用于生成渐变的浅色端
   function lighten(hex){
-    var c = hex.replace('#', '');
-    var r = parseInt(c.slice(0,2), 16), g = parseInt(c.slice(2,4), 16), b = parseInt(c.slice(4,6), 16);
-    r = Math.min(255, r + 90); g = Math.min(255, g + 90); b = Math.min(255, b + 90);
-    return '#' + [r,g,b].map(function(v){ return v.toString(16).padStart(2, '0'); }).join('');
+    var c = hex.replace('#', '');                                            // 去掉 # 号
+    var r = parseInt(c.slice(0,2), 16), g = parseInt(c.slice(2,4), 16), b = parseInt(c.slice(4,6), 16); // 拆出 R/G/B
+    r = Math.min(255, r + 90); g = Math.min(255, g + 90); b = Math.min(255, b + 90); // 各通道加 90，上限 255
+    return '#' + [r,g,b].map(function(v){ return v.toString(16).padStart(2, '0'); }).join(''); // 转回十六进制字符串
   }
 
   // —— 技能进度：Gist 云端 + localStorage 兜底 ——
+  // 把一份技能进度数据应用到 SKILLS 数组，返回是否有变化
   function applyProgressData(data){
     if (!data) return false;
     var changed = false;
     SKILLS.forEach(function(sk){
-      if (data[sk.id] != null) {
-        var v = Math.max(0, Math.min(100, parseInt(data[sk.id], 10)));
-        if (v !== sk.progress) { sk.progress = v; changed = true; }
+      if (data[sk.id] != null) {                                              // 该技能在数据里有值
+        var v = Math.max(0, Math.min(100, parseInt(data[sk.id], 10)));        // 限制在 0~100
+        if (v !== sk.progress) { sk.progress = v; changed = true; }           // 跟当前不一样才更新并标记变化
       }
     });
     return changed;
   }
+  // 加载技能进度：默认值 → localStorage → Gist 云端（云端为准）
   function loadSkillProgress(){
     // 先设默认值
     SKILLS.forEach(function(sk){ sk.progress = sk.defaultProgress; });
-    // 同步读 localStorage（快速显示）
+    // 同步读 localStorage（快速显示，不用等网络）
     try {
       var raw = localStorage.getItem(SKILLS_KEY);
       if (raw) applyProgressData(JSON.parse(raw));
@@ -2516,34 +2519,35 @@ function toast(msg, duration) {
       }
     }).catch(function(){});
   }
+  // 保存技能进度到 localStorage，并按需触发云端同步
   function saveSkillProgress(skipGist){
     try {
       var obj = {};
-      SKILLS.forEach(function(sk){ obj[sk.id] = sk.progress; });
-      localStorage.setItem(SKILLS_KEY, JSON.stringify(obj));
+      SKILLS.forEach(function(sk){ obj[sk.id] = sk.progress; });               // 收集所有技能进度
+      localStorage.setItem(SKILLS_KEY, JSON.stringify(obj));                   // 存到 localStorage
     } catch(e) {}
     if (!skipGist) {
-      debouncedPush();   // 走统一防抖推送
+      debouncedPush();   // 走统一防抖推送（skipGist=true 时只存本地不同步云端）
     }
   }
-  // —— 同步状态提示 ——
+  // —— 同步状态提示：在页面底部显示一条同步消息 ——
   function showSyncStatus(msg, duration){
     var tip = document.getElementById('skill-sync-tip');
-    if (!tip) {
+    if (!tip) {                                                                 // 第一次调用时创建提示元素
       tip = document.createElement('div');
       tip.id = 'skill-sync-tip';
       tip.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:9999;pointer-events:none;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);';
       document.body.appendChild(tip);
     }
-    tip.textContent = msg;
-    tip.style.opacity = '1';
-    clearTimeout(tip._t);
-    tip._t = setTimeout(function(){ tip.style.opacity = '0'; }, duration || 2000);
+    tip.textContent = msg;                                                      // 设置提示文字
+    tip.style.opacity = '1';                                                     // 显示
+    clearTimeout(tip._t);                                                        // 清掉上次的隐藏定时器
+    tip._t = setTimeout(function(){ tip.style.opacity = '0'; }, duration || 2000); // 到时淡出
   }
-  // —— 每 30 秒轮询 Gist 检查远端更新（全模块）——
+  // —— 每 30 秒轮询 Gist 检查远端更新（全模块：技能、项目、音量）——
   setInterval(function(){
     fetchFromGist().then(function(bundle){
-      if (localDirty) return;   // 本地有未推送改动，跳过
+      if (localDirty) return;   // 本地有未推送改动，跳过（避免覆盖本地正在编辑的内容）
       var changed = applyBundle(bundle);
       if (changed && changed.length) {
         reloadModules(changed);
