@@ -1215,16 +1215,18 @@
   </aside>
 
   <!-- ===== 右侧内容区 ===== -->
+  <!-- main 语义化标签：主内容。flex:1 占满侧栏之外的宽度 -->
   <main class="main">
-    <!-- 实时时间（所有页面通用，固定右上角） -->
+    <!-- 实时时间（所有页面通用，CSS absolute 定位在右上角） -->
     <div class="live-time">
-      <div class="time" id="liveTime">--:--:--</div>
-      <div class="date" id="liveDate">----年--月--日 星期-</div>
+      <div class="time" id="liveTime">--:--:--</div>       <!-- JS 每秒更新时分秒 -->
+      <div class="date" id="liveDate">----年--月--日 星期-</div> <!-- JS 更新年月日星期 -->
     </div>
 
+    <!-- 页面堆叠容器：所有 .page 叠在同一网格区域，只显示 active 的 -->
     <div class="page-stack" id="pageStack">
 
-      <!-- ===== 视图：我的项目（第 1 页） ===== -->
+      <!-- ===== 视图：我的项目（第 1 页，默认显示） ===== -->
       <section class="page active" id="page-projects">
         <div class="page-header">
           <span class="tag">我的项目 · 第 1 页</span>
@@ -1232,33 +1234,36 @@
           <p>从零开始，记录每一次迭代与成长。</p>
         </div>
 
-
+        <!-- 项目列表容器：JS 动态往里塞 .proj-card 卡片 -->
         <div id="projectList">
-          <!-- 项目卡片由 JS 根据 PROJECTS 数据渲染 -->
+          <!-- 项目卡片由 JS 根据 localStorage 的项目数据渲染 -->
         </div>
+        <!-- 添加新项目按钮：点击弹出编辑模态框 -->
         <div style="margin-top: 18px; text-align: center;">
           <button class="proj-add-btn" id="projAddBtn">+ 添加新项目</button>
         </div>
 
-        <!-- 社交媒体（合并自原独立页面） -->
+        <!-- 社交媒体板块（合并在项目页底部） -->
         <div style="margin-top: 8px;">
           <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:16px;">
             <h3 style="font-size:19px; font-weight:800; letter-spacing:0.5px;">社交媒体</h3>
             <span style="font-size:12px; color:var(--muted);">在这些地方也能找到我～</span>
           </div>
+          <!-- 社交卡片网格：JS 根据 SOCIALS 数组渲染 -->
           <div class="social-grid" id="socialGrid">
             <!-- 社交卡片由 JS 根据 SOCIALS 数组渲染 -->
           </div>
         </div>
       </section>
 
-      <!-- ===== 视图：我会的（第 2 页） ===== -->
+      <!-- ===== 视图：技能进度（第 2 页） ===== -->
       <section class="page" id="page-skills">
         <div class="page-header">
           <span class="tag">我的技能 · 第 2 页</span>
           <h2>技能进度</h2>
           <p>拖动滑块即可调节进度，刷新后自动记住～</p>
         </div>
+        <!-- 技能卡片网格：JS 根据 SKILLS 数组渲染，含可拖动滑块 -->
         <div class="skill-grid" id="skillGrid">
           <!-- 技能卡片由 JS 根据 SKILLS 数组渲染 -->
         </div>
@@ -1272,30 +1277,34 @@
           <h2>我的小游戏</h2>
           <p>游戏正在制作中，先占好位置，敬请期待。</p>
         </div>
+        <!-- 游戏卡片网格：JS 根据 GAMES 数组渲染 -->
         <div class="game-grid" id="gameGrid">
           <!-- 游戏卡片由 JS 根据 GAMES 数组渲染 -->
         </div>
-        <!-- 贪吃蛇游戏展开面板（iframe） -->
+        <!-- 贪吃蛇游戏展开面板：默认隐藏，点"开始玩"后展开，iframe 懒加载 snake.html -->
         <div class="game-panel glass-card" id="snakePanel">
           <iframe id="snakeFrame" src="about:blank" title="贪吃蛇小游戏" loading="lazy"></iframe>
           <br>
           <button class="game-panel-close" id="snakeClose">收起游戏</button>
         </div>
+        <!-- 占位提示：告诉用户以后可以在这里加自己的小游戏 -->
         <div class="game-placeholder">
           这里以后放你亲手写的小游戏（贪吃蛇、俄罗斯方块、2048……）。制作完成后，把游戏代码加进页面，卡片就会变成可玩的入口。
         </div>
       </section>
 
-      <!-- ===== 视图：有趣的网站（第 5 页） ===== -->
+      <!-- ===== 视图：有趣的网站（第 4 页） ===== -->
       <section class="page" id="page-sites">
         <div class="page-header">
           <span class="tag">有趣的网站 · 第 4 页</span>
           <h2>有趣的网站</h2>
           <p>像手机 App 一样，点一下图标就能打开。</p>
         </div>
+        <!-- 网站图标网格：JS 根据 SITES 数组渲染成圆形图标 -->
         <div class="app-grid" id="appGrid">
           <!-- App 图标由 JS 根据 SITES 数组渲染 -->
         </div>
+        <!-- 使用说明卡片：告诉用户怎么改 SITES 数组增删网站 -->
         <div class="sites-tip glass-card">
           <h3>怎么添加 / 修改网站</h3>
           <p>所有网站都配置在页面底部的 <code>SITES</code> 数组里，每个网站一行：名称、简介、图标文字、图标颜色、网址。</p>
@@ -1303,14 +1312,14 @@
         </div>
       </section>
 
-      <!-- ===== 视图：留言（第 6 页，修复 P1 页码） ===== -->
+      <!-- ===== 视图：留言板（第 5 页） ===== -->
       <section class="page" id="page-guestbook">
         <div class="page-header">
           <span class="tag">留言 · 第 5 页</span>
           <h2>留言板</h2>
           <p>无需注册，匿名即可留言；所有访客的留言互通，回复功能已开启。</p>
         </div>
-        <!-- Twikoo 云端留言板：所有人留言互通（云函数地址在页面底部 script 的 TWIKOO_ENV 配置） -->
+        <!-- Twikoo 云端留言板容器：JS 调用 twikoo.init() 把留言板渲染进这里 -->
         <div id="tcomment" class="glass-card" style="padding:20px;"></div>
       </section>
 
