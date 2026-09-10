@@ -2557,12 +2557,13 @@ function toast(msg, duration) {
   }, GIST_CONFIG.pollInterval);
 
   // —— 渲染技能卡片（含可拖动滑块 + 管理员权限门）——
-  loadSkillProgress();
-  var skillGrid = document.getElementById('skillGrid');
+  loadSkillProgress();                                                          // 先加载技能进度（默认→本地→云端）
+  var skillGrid = document.getElementById('skillGrid');                         // 技能卡片容器
   if (skillGrid) {
-    SKILLS.forEach(function(sk){
+    SKILLS.forEach(function(sk){                                                // 遍历每个技能生成卡片
       var card = document.createElement('div');
       card.className = 'skill-card glass-card';
+      // 卡片 HTML：图标 + 名称 / 描述 / 进度条（含百分比和滑块）
       card.innerHTML =
         '<div class="s-name"><span class="s-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">' + sk.icon + '</svg></span>' + sk.name + '</div>' +
         '<p class="s-desc">' + sk.desc + '</p>' +
@@ -2572,45 +2573,46 @@ function toast(msg, duration) {
         '</div>';
       skillGrid.appendChild(card);
 
-      var bar = card.querySelector('.skill-bar');
-      var fill = card.querySelector('.fill');
-      var pctEl = card.querySelector('.pct');
-      var slider = card.querySelector('.skill-slider');
-      var lockHint = card.querySelector('.lock-hint');
+      // 取出卡片内的各个子元素，方便后续操作
+      var bar = card.querySelector('.skill-bar');                               // 进度条外框
+      var fill = card.querySelector('.fill');                                   // 进度条填充部分
+      var pctEl = card.querySelector('.pct');                                   // 百分比文字
+      var slider = card.querySelector('.skill-slider');                         // 透明的 range 滑块（覆盖在进度条上）
+      var lockHint = card.querySelector('.lock-hint');                          // 锁定提示图标
 
       // 初始宽度（带动画）
       fill.style.width = sk.progress + '%';
-      // 切页时重播动画需要 data-w
+      // 切页时重播动画需要 data-w（存目标宽度）
       fill.setAttribute('data-w', sk.progress + '%');
 
-      // —— 管理员权限检查：决定是否允许拖动 ——
+      // —— 管理员权限检查：根据是否解锁决定滑块是否可拖 ——
       function refreshLockState(){
-        if (window.isAdminUnlocked && window.isAdminUnlocked()) {
-          bar.classList.remove('locked');
-          lockHint.textContent = '';
-        } else {
-          bar.classList.add('locked');
-          lockHint.textContent = '🔒';
+        if (window.isAdminUnlocked && window.isAdminUnlocked()) {               // 已解锁
+          bar.classList.remove('locked');                                       // 移除锁定样式
+          lockHint.textContent = '';                                            // 隐藏锁图标
+        } else {                                                                // 未解锁
+          bar.classList.add('locked');                                          // 加锁定样式（灰化、禁用）
+          lockHint.textContent = '🔒';                                          // 显示锁图标
         }
       }
-      refreshLockState();
-      // 把刷新函数挂到 bar 上，让 setInterval 能调到
+      refreshLockState();                                                       // 初始执行一次
+      // 把刷新函数挂到 bar 上，让外面的 setInterval 能调到
       bar._refreshLock = refreshLockState;
 
-      // 拖动中：实时更新（需管理员）
+      // 拖动中：实时更新进度条宽度和百分比（需管理员权限）
       slider.addEventListener('input', function(){
-        if (!(window.isAdminUnlocked && window.isAdminUnlocked())) {
+        if (!(window.isAdminUnlocked && window.isAdminUnlocked())) {            // 未解锁 → 拒绝修改
           toast('🔒 需要管理员权限才能修改进度');
-          slider.value = fill.getAttribute('data-w') ? parseInt(fill.getAttribute('data-w'), 10) : sk.progress;
+          slider.value = fill.getAttribute('data-w') ? parseInt(fill.getAttribute('data-w'), 10) : sk.progress; // 把滑块弹回原值
           return;
         }
-        var v = parseInt(slider.value, 10);
-        sk.progress = v;
-        fill.style.width = v + '%';
-        fill.setAttribute('data-w', v + '%');   // 保持同步，切页动画不丢
-        pctEl.textContent = v + '%';
+        var v = parseInt(slider.value, 10);                                      // 读取滑块当前值
+        sk.progress = v;                                                         // 更新内存中的进度
+        fill.style.width = v + '%';                                              // 更新填充宽度
+        fill.setAttribute('data-w', v + '%');                                    // 同步 data-w，切页动画不丢
+        pctEl.textContent = v + '%';                                             // 更新百分比文字
       });
-      // 拖动开始：禁用过渡让滑块跟手
+      // 拖动开始：加 dragging 类，禁用 CSS 过渡让滑块跟手
       slider.addEventListener('mousedown', function(){
         if (!(window.isAdminUnlocked && window.isAdminUnlocked())) return;
         bar.classList.add('dragging');
@@ -2619,22 +2621,23 @@ function toast(msg, duration) {
         if (!(window.isAdminUnlocked && window.isAdminUnlocked())) return;
         bar.classList.add('dragging');
       }, { passive: true });
-      // 拖动结束：保存 + 恢复过渡
+      // 拖动结束（change 事件）：保存进度 + 恢复过渡
       slider.addEventListener('change', function(){
         if (!(window.isAdminUnlocked && window.isAdminUnlocked())) return;
-        saveSkillProgress();
+        saveSkillProgress();                                                     // 存 localStorage + 云端同步
         bar.classList.remove('dragging');
       });
+      // 鼠标/触摸抬起时也恢复过渡（兜底）
       slider.addEventListener('mouseup', function(){ bar.classList.remove('dragging'); });
       slider.addEventListener('touchend', function(){ bar.classList.remove('dragging'); });
     });
 
-    // 每 3 秒检查一次管理员状态（解锁/锁定后无需刷新页面）
+    // 每 3 秒检查一次管理员状态（解锁/锁定后无需刷新页面就能生效）
     setInterval(function(){
       skillGrid.querySelectorAll('.skill-bar').forEach(function(b){ if (b._refreshLock) b._refreshLock(); });
     }, 3000);
 
-    // —— 暴露 updateSkillCards：云端更新后刷新 UI ——
+    // —— 暴露 updateSkillCards：云端更新后刷新所有技能卡片的 UI ——
     window.updateSkillCards = function(){
       SKILLS.forEach(function(sk){
         var card = skillGrid.querySelector('[data-skill-id="' + sk.id + '"]') || skillGrid.children[SKILLS.indexOf(sk)];
