@@ -223,12 +223,14 @@
   .page-header p { color: var(--muted); font-size: 14px; margin-top: 6px; }       /* 页面描述 */
 
   /* ===== 项目卡片 ===== */
+  /* .proj-card：单个项目卡片容器（玻璃风格） */
   .proj-card {
     padding: 28px 30px;
-    margin-bottom: 20px;
+    margin-bottom: 20px;                  /* 卡片之间间距 */
   }
-  .proj-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .proj-title { font-size: 20px; font-weight: 800; }
+  .proj-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; } /* 标题行：标题左、领域标签右，可换行 */
+  .proj-title { font-size: 20px; font-weight: 800; } /* 项目名称 */
+  /* 领域标签（如 "HTML · CSS"）：胶囊形 */
   .proj-field {
     font-size: 13px; color: var(--accent);
     background: var(--accent-soft);
@@ -236,23 +238,26 @@
     padding: 3px 12px;
     border-radius: 999px;
   }
-  .proj-desc { color: var(--muted); font-size: 14px; margin-top: 10px; max-width: 640px; }
+  .proj-desc { color: var(--muted); font-size: 14px; margin-top: 10px; max-width: 640px; } /* 项目描述，限宽 640px */
+  /* 统计数据区：3 列等分网格 */
   .proj-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);  /* 3 列等宽 */
     gap: 14px;
     margin-top: 22px;
   }
+  /* 单个统计格 */
   .stat-cell {
-    background: rgba(37,99,192,0.04);
+    background: rgba(37,99,192,0.04);     /* 极浅蓝底 */
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 14px 16px;
     text-align: center;
   }
-  .stat-cell .num { font-size: 22px; font-weight: 800; color: var(--accent); }
-  .stat-cell .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .proj-stack { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .stat-cell .num { font-size: 22px; font-weight: 800; color: var(--accent); } /* 数字：大、粗、蓝 */
+  .stat-cell .label { font-size: 12px; color: var(--muted); margin-top: 2px; }   /* 标签：小字灰 */
+  .proj-stack { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; } /* 技术栈标签行，可换行 */
+  /* 通用胶囊标签（技术栈、领域等复用） */
   .chip {
     font-size: 12px;
     color: var(--accent);
