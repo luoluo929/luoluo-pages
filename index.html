@@ -2755,7 +2755,7 @@ function toast(msg, duration) {
             const p = document.createElement('div');
             p.className = 'particle';
             p.style.left = Math.random() * 100 + '%';
-            p.style.animationDuration = (Math.random() * 8 + 8) + 's';
+            p.style.animationDuration = (Math.random() * 8 + 1) + 's';
             p.style.animationDelay = (Math.random() * 3) + 's';
             p.style.width = p.style.height = (Math.random() * 3 + 3) + 'px';
             particlesEl.appendChild(p);
