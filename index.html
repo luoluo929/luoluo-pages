@@ -9,29 +9,31 @@
 <link rel="icon" href="assets/avatar.jpg" type="image/jpeg">
 <style>
   /* ===== 基础 ===== */
+  /* :root 里定义全局 CSS 变量；改这里的颜色/圆角，整个网站会一起变 */
   :root {
-    --bg-top: #edf4fc;
-    --bg-bottom: #d3e3f6;
-    --card: rgba(255,255,255,0.90);
-    --card-solid: #ffffff;
-    --border: rgba(66,120,180,0.18);
-    --text: #182838;
-    --muted: #4a5e72;
-    --accent: #2563c0;
-    --accent-soft: rgba(47,111,208,0.12);
-    --accent-2: #8fc4f0;
-    --shadow: 0 6px 28px rgba(30,58,92,0.07);
-    --radius: 16px;
-    --toast-bg: rgba(28,46,64,0.92);
+    --bg-top: #edf4fc;                  /* 背景渐变：上端颜色（浅蓝） */
+    --bg-bottom: #d3e3f6;               /* 背景渐变：下端颜色（稍深蓝） */
+    --card: rgba(255,255,255,0.90);     /* 玻璃卡片底色：白色 90% 透明 */
+    --card-solid: #ffffff;              /* 实色卡片底色（模态框用） */
+    --border: rgba(66,120,180,0.18);    /* 边框颜色：淡蓝半透明 */
+    --text: #182838;                    /* 正文主文字颜色 */
+    --muted: #4a5e72;                   /* 次要文字颜色（说明、辅助文字） */
+    --accent: #2563c0;                  /* 主题强调色（按钮、链接、高亮） */
+    --accent-soft: rgba(47,111,208,0.12); /* 主题色淡化版（标签、悬停背景） */
+    --accent-2: #8fc4f0;                /* 主题色浅蓝版（进度条渐变一端） */
+    --shadow: 0 6px 28px rgba(30,58,92,0.07); /* 卡片投影：柔和蓝灰阴影 */
+    --radius: 16px;                     /* 通用圆角大小 */
+    --toast-bg: rgba(28,46,64,0.92);    /* Toast 提示背景色 */
   }
+  /* 全局重置：去掉所有元素默认外边距/内边距，盒模型用 border-box（宽高含边框） */
   * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { height:100%; }
+  html, body { height:100%; }           /* 让 html 和 body 撑满整个视口高度 */
   body {
-    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
-    background: linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
-    color: var(--text);
-    line-height: 1.7;
-    min-height: 100vh;
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; /* 字体：苹方优先，回退到雅黑/系统字体 */
+    background: linear-gradient(160deg, var(--bg-top), var(--bg-bottom));  /* 页面背景：160 度线性渐变 */
+    color: var(--text);                 /* 全局文字颜色 */
+    line-height: 1.7;                   /* 行高：1.7 倍字号，阅读舒服 */
+    min-height: 100vh;                  /* 最小高度等于一屏，避免内容少时背景不够 */
   }
 
   /* ===== 公共玻璃卡片（提取自5处重复样式） ===== */
